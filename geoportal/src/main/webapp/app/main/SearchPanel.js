@@ -30,7 +30,8 @@ define(["dojo/_base/declare",
         "app/search/AppliedFilters",
         "app/search/ResultsPane",
         "app/search/OpenSearchLinksPane",
-        "app/search/CollectionsFilter"
+        "app/search/CollectionsFilter",
+        "app/search/KeywordSearchBox"
       ], 
 function(declare, lang, Templated, template, i18n) {
 

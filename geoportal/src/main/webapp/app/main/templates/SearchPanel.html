@@ -11,6 +11,7 @@
       <div class="g-search-pane-left">
         <div data-dojo-type="app/search/PageUrlFilter"></div>
 
+        <!--
         <div class="g-filter-collapse g-filter-spatial" data-dojo-type="app/search/SpatialFilter"
           data-dojo-props="
             field: 'envelope_geo',
@@ -45,6 +46,7 @@
             open:false,
             label:'${i18n.search.criteria.date}'">
         </div>
+        -->
         <!-- Uncomment to turn Paleo-Date search
         <div class="g-filter-collapse" data-dojo-type="app/search/BasicNumericFilter"
           data-dojo-props="
@@ -78,7 +80,6 @@
         <div data-dojo-type="app/search/DateFilter"
           data-dojo-props="field:'sys_created_dt',interval:'day',allowHistogram:false,label:'Created'">
         </div>
-        -->
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'sys_owner_s',open:false,label:'${i18n.search.criteria.owner}'">
         </div>
@@ -86,6 +87,7 @@
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'apiso_TopicCategory_s',open:false,label:'${i18n.search.criteria.topicCategory}'">
         </div>
+        -->
         <!--
         <div class="g-filter-collapse" data-dojo-type="app/search/HierarchyTree"
           data-dojo-props="
@@ -94,19 +96,27 @@
             props:{size:200}">
         </div>
         -->
+
+        <div class="g-filter-collapse" data-dojo-type="app/search/KeywordSearchBox"
+          data-dojo-props="field:'keywords_s',label:'${i18n.search.criteria.keywordSearch}'">
+        </div>
+
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'sys_metadatatype_s',label:'${i18n.search.criteria.metadataType}'">
         </div>
 
+        <!--
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'contact_organizations_s',label:'${i18n.search.criteria.organizations}'">
         </div>
+        -->
 
         <!-- e.g. field:'keywords_s',label:'Keywords',props:{size:20,min_doc_count:500} -->
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'keywords_s',label:'${i18n.search.criteria.keywords}',props:{size:20}">
         </div>
-
+        
+        <!--
         <div class="g-filter-collapse" data-dojo-type="app/search/TermsAggregation"
           data-dojo-props="field:'src_source_type_s',label:'${i18n.search.criteria.originType}',props:{size:20, missing:'${i18n.search.criteria.missingSource}'}">
         </div>
@@ -135,7 +145,7 @@
             field:'sys_access_groups_s',
             label:'${i18n.search.criteria.accessGroups}'">
         </div>
-
+        -->
         <!-- Future release create filter capability -->
         <button style="display: none;" class="g-filter-create-btn" type="button" name="button">
           <svg class="g-filter-create-icon"viewBox="0 0 24 24">

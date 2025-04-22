@@ -1,0 +1,19 @@
+<div class="search-box">
+  <div class="input-group input-group-sm">
+    <span class="esri-icon-search"></span>
+    <input id="sideSearchBox" aria-label="Search" type="text" class="form-control"
+      placeholder="${i18n.search.sideSearchBox.searchCatalog}..."
+      data-dojo-attach-point="searchTextBox"
+    />
+
+    <span class="input-group-btn">
+      <button class="btn btn-success btn-sm" type="button"
+        data-dojo-attach-point="searchButton"
+        data-dojo-attach-event="onClick: search"
+        title="${i18n.search.sideSearchBox.search}"
+      >
+        ${i18n.search.sideSearchBox.search}
+      </button>
+    </span>
+  </div>
+</div>

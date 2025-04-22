@@ -32,7 +32,8 @@ define({
     },
 
     nav: {
-      brand: "Geoportal",
+      brand: "US Army Corps of Engineers",
+      title: "Data Catalog",
       home: "Home",
       search: "Search",
       catalog: "Catalog",
@@ -74,6 +75,7 @@ define({
         metadataType: "Metadata Type",
         organizations: "Organizations",
         keywords: "Keywords",
+        keywordSearch: "Keyword Search",
         originType: "Origin Type",
         origin: "Source of Origin",
         approvalStatus: "Approval Status",
@@ -88,6 +90,10 @@ define({
         componentLabel: "Label",
         componentLabelPlaceholder: "",
         reset: "Reset"
+      },
+      sideSearchBox: {
+        search: "Search Keywords",
+        searchCatalog: "Search the Catalog for Keywords"
       },
       searchBox: {
         search: "Search",
