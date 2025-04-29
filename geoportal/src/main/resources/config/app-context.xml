@@ -41,12 +41,12 @@ see: docs/configureByEnvironmentVariable.md
 		<beans:property name="allowFileId" value="false" />
 		<beans:property name="mappingsFile" value="${gpt_mappingsFile:config/elastic-mappings.json}" />
 		<beans:property name="mappingsFile7" value="${gpt_mappingsFile:config/elastic-mappings-7.json}" />
-		<beans:property name="httpPort" value="443" />		
+		<beans:property name="httpPort" value="${gpt_elasticPort:443}" />
 		<beans:property name="proxyBufferSize" value="8192" />
 		
 		<!-- Uncomment and complete the following if you want to use secured Elastic -->
 		
-		<beans:property name="useHttps" value="true" />
+		<beans:property name="useHttps" value="${gpt_elasticHttps:true}" />
 		<beans:property name="encryptPassword" value="false" />
 		<beans:property name="base64Key" value="${gpt_base64Key}" />
 		<beans:property name="base64Iv" value="${gpt_base64Iv}" />
