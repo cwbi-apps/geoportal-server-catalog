@@ -13,7 +13,14 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.esri.geoportal.context.GeoportalContext;
+import com.esri.geoportal.lib.elastic.ElasticContext;
+
 public class EncryptDecrypt {
+	private static final Logger LOGGER = LoggerFactory.getLogger(EncryptDecrypt.class);
 	public static String encrypt(String algorithm, String input, SecretKey key, IvParameterSpec iv)
 			throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException,
 			InvalidKeyException, BadPaddingException, IllegalBlockSizeException {
@@ -26,12 +33,9 @@ public class EncryptDecrypt {
 
 
 
-	public static String decrypt(String encryptedText,String base64Key, String base64Iv ) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException
+	public static String decrypt(String encryptedText,String base64Key, String base64Iv) throws NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, InvalidAlgorithmParameterException
 	{		
 		String algorithm = "AES/CBC/PKCS5Padding";	 
-//		    
-//	    String base64Key = "8MYDuAq/sqR+ewHHy1KqTSP31AjVwU+2OpTRusqDI1U=";
-//        String base64Iv = "lCKPw6sG7JcQ0SWUbwtkdQ==";
         
         byte[] decodedKey = Base64.getDecoder().decode(base64Key);
         byte[] decodedIv = Base64.getDecoder().decode(base64Iv);
@@ -46,7 +50,25 @@ public class EncryptDecrypt {
         return new String(decryptedData);
 		
 	}
-
-
+	
+	public static String decryptLdapPass(String inputText)
+	{
+		String decryptedPass = "";
+		try {
+			ElasticContext ec = GeoportalContext.getInstance().getElasticContext();
+			if(ec.isEncryptPassword())
+			{
+				decryptedPass = decrypt(inputText,ec.getBase64Key(),ec.getBase64Iv());
+			}else
+			{
+				decryptedPass = inputText;
+			}			
+		}
+		catch(Exception ex)
+		{
+			LOGGER.error("Ldap password could not be decrypted");
+		}
+		return decryptedPass;
+	}
 
 }

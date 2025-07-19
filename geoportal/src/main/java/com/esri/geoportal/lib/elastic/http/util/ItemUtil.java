@@ -21,6 +21,7 @@ import com.esri.geoportal.lib.elastic.ElasticContext;
 import com.esri.geoportal.lib.elastic.http.ElasticClient;
 import com.esri.geoportal.lib.elastic.util.FieldNames;
 import com.esri.geoportal.lib.elastic.util.MurmurUtil;
+import com.esri.geoportal.search.StacHelper;
 
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -28,11 +29,14 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonValue;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Item utilities.
  */
 public class ItemUtil {
-  
+	private static final Logger LOGGER = LoggerFactory.getLogger(ItemUtil.class);
   /**
    * Get the item source.
    * @param item the item
@@ -143,7 +147,7 @@ public class ItemUtil {
         String xml = itemSource.getString(FieldNames.FIELD_SYS_XML);
         return xml;
       } catch (Exception e) {
-        e.printStackTrace();
+    	  LOGGER.error(e.getMessage());
       }
     } else {
       ElasticClient client = ElasticClient.newClient();
@@ -155,7 +159,7 @@ public class ItemUtil {
           String xml = item.getJsonObject("_source").getString(FieldNames.FIELD_SYS_CLOB);
           return xml;
         } catch (Exception e) {
-          e.printStackTrace();
+        	LOGGER.error(e.getMessage());
         }
       }
     }
@@ -208,7 +212,7 @@ public class ItemUtil {
             meta = (JsonObject)JsonUtil.toJsonStructure(v);
           }
         } catch (Exception e) {
-          e.printStackTrace();
+        	LOGGER.error(e.getMessage());
         }       
       }
     } else {
@@ -238,7 +242,7 @@ public class ItemUtil {
   public JsonObject searchForFileId(String indexName, String typeName, String fileid) throws Exception {
     if (fileid == null || fileid.length() == 0) return null;
     ElasticClient client = ElasticClient.newClient();
-    String url = client.getTypeUrl(indexName,typeName);
+    String url = client.getTypeUrlForSearch(indexName);
     url += "/_search";
     String field = FieldNames.FIELD_FILEID;
     JsonObjectBuilder request = Json.createObjectBuilder();

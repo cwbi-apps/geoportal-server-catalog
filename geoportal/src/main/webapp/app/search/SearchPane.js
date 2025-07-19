@@ -26,7 +26,7 @@ define(["dojo/_base/declare",
         "dojo/text!./templates/SearchPane.html",
         "dojo/i18n!app/nls/resources",
         "dojo/request",
-        "app/context/AppClient",
+        "app/context/AppClient",       
         "app/search/SearchBox",
         "app/search/ResultsPane"], 
 function(declare, lang, array, query, domClass, topic, appTopics, registry,
@@ -39,6 +39,7 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
     templateString: template,
     
     defaultSort: null,
+    
     searchOnStart: true,
     
     lastQuery: null,
@@ -51,6 +52,10 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
       this.inherited(arguments);
       if (this.defaultSort === null) {
         this.defaultSort = AppContext.appConfig.searchResults.defaultSort;
+      }
+      if(AppContext.appConfig.system.secureCatalogApp)
+      {
+    	  this.searchOnStart = false;
       }
       var self = this;
       topic.subscribe(appTopics.BulkUpdate,function(params){
@@ -67,7 +72,7 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
     startup: function() {
       if (this._started) {return;}
       this.inherited(arguments);
-      var self = this;
+      var self = this;     
       if (this.searchOnStart) {
         // wait a bit for the map
         setTimeout(function(){self.search({});},100);
@@ -98,10 +103,10 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
       var url = "./elastic/"+AppContext.geoportal.metadataIndexName+"/_search";
       var v, postData = null;
 
-      if (AppContext.geoportal.supportsApprovalStatus || 
-          AppContext.geoportal.supportsGroupBasedAccess) {
-        var client = new AppClient();
-        url = client.appendAccessToken(url); 
+      if (AppContext.appConfig.system.secureCatalogApp || (AppContext.geoportal.supportsApprovalStatus || 
+              AppContext.geoportal.supportsGroupBasedAccess)) {
+      	  var client = new AppClient();         
+          url = client.appendAccessToken(url); 
       }
       
       var sProp = null, oProp = null, props = params.urlParams;
@@ -128,10 +133,15 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
       }
 
       //console.warn("params.queries",params.queries);
+      if (postData === null) postData = {};
+      //#581 ElasticSearch 8.0 is returning extra item with id as _search so excluding that item in search query
+      var boolObj = {};    
+      boolObj.must_not ={"term":{"_id":"_search"}};
       if (params.queries && params.queries.length > 0) {
-        if (postData === null) postData = {};
-        postData.query = {"bool":{"must":params.queries}};
+    	 boolObj.must = params.queries;        
       } 
+      postData.query = {"bool":boolObj};
+      
       if (params.aggregations) {
         if (postData === null) postData = {};
         postData.aggregations = params.aggregations;
@@ -168,7 +178,7 @@ function(declare, lang, array, query, domClass, topic, appTopics, registry,
             component.processResults(response);
           });
         }
-      }).otherwise(function(error){
+      }).catch(function(error){
         if (!dfd.isCanceled()) {
           if (error && error.dojoType && error.dojoType === "cancel") {
           } else {

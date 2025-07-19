@@ -2,37 +2,42 @@
 
 [![apache licensed](https://img.shields.io/badge/license-Apache%202.0-orange.svg?style=flat-square)](https://raw.githubusercontent.com/Esri/geoportal-server-catalog/master/LICENSE.txt)
 
-Esri Geoportal Server v2 is Esri's free and open source metadata catalog and search application, based on elasticsearch. 
+It's July 8, 2025, which means: 
+> ## Geoportal Server 3.0.1 is now available!
 
-Esri Geoportal Server v2 now provides the catalog and harvesting capabilities as separate modules. Separate modules are useful when users need the catalog capabilities without needing metadata harvesting, or possibly even metadata editing.
+Esri Geoportal Server is Esri's free and open source metadata catalog and search application, based on elasticsearch. 
+
+Esri Geoportal Server provides the catalog and harvesting capabilities as separate modules. Separate modules are useful when users need the catalog capabilities without needing metadata harvesting, or possibly even metadata editing.
 
 This repository contains the capability of **Geoportal Server Catalog**, while it's sibling **[Geoportal Server Harvester](https://github.com/ArcGIS/geoportal-server-harvester)** is managed in a separate repository.
 
 
 ## Releases and Downloads
-- **2.7.2 - LATEST** - released, October 4, 2024.
+- **3.0.1 - LATEST** - released, July 8, 2025!! See [What's New](https://github.com/Esri/geoportal-server-catalog/wiki/What's-new-in-Geoportal-Server-3.0.1)!
+- 2.7.2.1 - released, November 22, 2024.
+- 2.7.2 - released, October 4, 2024.
 - 2.7.1 - released, December 21, 2023.
 - 2.7.0-patch1 - released Sep 11, 2023.
 - 2.6.5 - released December 17, 2021. Note that this version includes resolution to the Log4j2 vulnerability identified in December 2021.
 - [All releases](https://github.com/Esri/geoportal-server-catalog/wiki).
 
 ## Can't Wait to Get Started?
-- Try the [sandbox site](https://gpt.geocloud.com/geoportal2) and learn what Geoportal 2 is all about!
+- Try the [sandbox site](https://gpt.geocloud.com/geoportal3) and learn what the new Geoportal Server 3.0.1 is all about!
 - A different configuration that contains several 100,000 images as its [catalog](https://geoss.esri.com/imagecatalog)
 
 ## Features
 * **Metadata editor** - Create and edit metadata in ArcGIS Metadata, FGDC, ISO 19115 (Data), ISO 19119 (Service), ISO 19115-2 (Imagery and Gridded Data), INSPIRE 2.0.1 (Data), INSPIRE 2.0.1 (Service), GEMINI (Data), GEMINI (Service)
 * **Faceted Search** - Configure different facets to allow your user to filter from the hay stack to the needle
-* **Scalability** - Thank you elasticsearch for providing multi-node configuration support
+* **Scalability** - You can run the index of metadata in Elasticsearch and OpenSearch locally, in a cluster, as well as using cloud native platform services
 * **OGC CSW 3.0.0 and CSW 2.0.2** - Standards compliant catalog service interface, includes CSW2 requirements for INSPIRE Discovery Service
 * **Spatio-Temporal Asset Catalog API** - As of Geoportal 2.7.2, it may be used to build a scalable Spatio-Temporal Asset Catalog (STAC) 
 * **Many metadata formats** - Extend the configuration with your favorite XML format
-* **Built-in Viewer** - Use the app we include or build one using Web AppBuilder and hook it up!
+* **Built-in Viewer** - Geoportal Server now includes a built-in viewer using ArcGIS API for JavaScript 4.x
 * **No more database** - Yes that's a feature!
 
 ## Requirements
 
-* Elasticsearch 7.x or higher, or OpenSearch 2.12
+* Elasticsearch 8.x or higher, or OpenSearch 2.14
 * Tomcat 9.x
 
 ## Installation
@@ -52,7 +57,7 @@ Esri welcomes contributions from anyone and everyone. Please see our [guidelines
 
 
 ## Licensing
-Copyright 2003 - 2023 Esri
+Copyright 2003 - 2025 Esri
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

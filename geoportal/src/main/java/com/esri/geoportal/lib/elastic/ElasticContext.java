@@ -35,8 +35,9 @@ import org.slf4j.LoggerFactory;
 
 import com.esri.geoportal.lib.security.EncryptDecrypt;
 
+
 /**
- * Elasticsearch context.
+ * Elasticsearch OR OpenSearch context.
  */
 public class ElasticContext {
   private static final int DEFAULT_PROXY_BUFFER_SIZE = 4096;
@@ -51,7 +52,7 @@ public class ElasticContext {
   private String clusterName = null;
   private int httpPort = 9200;
   private String indexName = "metadata";
-  private boolean supportsCollections = false;
+  private boolean autoCreateCollectionIndex = false;
   private String collectionIndexName = "collections";
   private boolean indexNameIsAlias = true;
   private boolean is6Plus = false;
@@ -66,28 +67,55 @@ public class ElasticContext {
   private boolean useSeparateXmlItem = true;
   private String xmlIndexType = "clob";
   private String base64Key = "";
+  private String engineType = "";
+  private String awsOpenSearchType = "";
+  
+  private String awsALBEndpoint = "";
+  
+  public String getAwsALBEndpoint() {
+	return awsALBEndpoint;
+  }
+
+	public void setAwsALBEndpoint(String awsALBEndpoint) {
+		this.awsALBEndpoint = awsALBEndpoint;
+	}
+	
+  public String getAwsOpenSearchType() {
+    return awsOpenSearchType;
+  }
+
+  public void setAwsOpenSearchType(String awsOpenSearchType) {
+    this.awsOpenSearchType = awsOpenSearchType;
+  }  
+  
+  public String getEngineType() {
+    return engineType;
+  }
+
+  public void setEngineType(String engineType) {
+    this.engineType = engineType;
+  }
+
   public String getBase64Key() {
-	return base64Key;
-}
+    return base64Key;
+  }
 
-public void setBase64Key(String base64Key) {
-	this.base64Key = base64Key;
-}
+  public void setBase64Key(String base64Key) {
+          this.base64Key = base64Key;
+  }
 
-public String getBase64Iv() {
-	return base64Iv;
-}
+  public String getBase64Iv() {
+          return base64Iv;
+  }
 
-public void setBase64Iv(String base64Iv) {
-	this.base64Iv = base64Iv;
-}
+  public void setBase64Iv(String base64Iv) {
+          this.base64Iv = base64Iv;
+  }
 
-private String base64Iv = "";
+  private String base64Iv = "";
   private String username = null;
   private String password = null;
   private boolean encryptPassword = false;
-  
-  
   
   private Integer proxyBufferSize = DEFAULT_PROXY_BUFFER_SIZE;
   
@@ -110,106 +138,126 @@ private String base64Iv = "";
     this.proxyBufferSize = proxyBufferSize!=null? proxyBufferSize: DEFAULT_PROXY_BUFFER_SIZE;
   }
   
-  /** Allow internal metadata file idenitfiers to be used as the Elasticsearch _id .*/
+  /** Allow internal metadata file identifiers to be used as the Elasticsearch _id .*/
   public boolean getAllowFileId() {
     return allowFileId;
   }
-  /** Allow internal metadata file idenitfiers to be used as the Elasticsearch _id .*/
+  /** Allow internal metadata file identifiers to be used as the Elasticsearch _id
+   * @param allowFileId.*/
   public void setAllowFileId(boolean allowFileId) {
     this.allowFileId = allowFileId;
   }
 
-  /** Auto-create the metadata index if required. */
+  /** Auto-create the metadata index if required.
+   * @return  */
   public boolean getAutoCreateIndex() {
     return autoCreateIndex;
   }
-  /** Auto-create the metadata index if required. */
+  /** Auto-create the metadata index if required.
+   * @param autoCreateIndex */
   public void setAutoCreateIndex(boolean autoCreateIndex) {
     this.autoCreateIndex = autoCreateIndex;
   }
   
-  /** The cluster name. */
+  /** The cluster name.
+   * @return  */
   public String getClusterName() {
     return clusterName;
   }
-  /** The cluster name. */
+  /** The cluster name.
+   * @param clusterName */
   public void setClusterName(String clusterName) {
     this.clusterName = clusterName;
   }
   
-  /** The HTTP port (default=9200) */
+  /** The HTTP port (default=9200)
+   * @return  */
   public int getHttpPort() {
     return httpPort;
   }
-  /** The HTTP port (default=9200) */
+  /** The HTTP port (default=9200)
+   * @param httpPort */
   public void setHttpPort(int httpPort) {
     this.httpPort = httpPort;
   }
 
-  /** The metadata index name (default=metadata). */
+  /** The metadata index name (default=metadata).
+   * @return  */
   public String getIndexName() {
     return this.indexName;
   }
-  /** The metadata index name (default=metadata). */
+  /** The metadata index name (default=metadata).
+   * @param indexName */
   public void setIndexName(String indexName) {
     this.indexName = indexName;
   }
-  /** The collections index name (default=collections). */
+  /** The collections index name (default=collections).
+   * @return  */
   public String getCollectionIndexName() {
 		return collectionIndexName;
   }
-  /** The collections index name (default=collections). */
+  /** The collections index name (default=collections).
+   * @param collectionIndexName */
  public void setCollectionIndexName(String collectionIndexName) {
 	this.collectionIndexName = collectionIndexName;
  }
 
-  /** Treat the index name as an alias. */
+  /** Treat the index name as an alias.
+   * @return  */
   public boolean getIndexNameIsAlias() {
     return indexNameIsAlias;
   }
 
   /** supports collections or not */
-  public boolean getSupportsCollections() {
-    return supportsCollections;
+  public boolean getAutoCreateCollectionIndex() {
+    return autoCreateCollectionIndex;
   }
   /** supports collections or not */
-  public void setSupportsCollections(boolean doesSupportCollections) {
-    this.supportsCollections = doesSupportCollections;
+  public void setAutoCreateCollectionIndex(boolean autoCreateCollectionIndex) {
+    this.autoCreateCollectionIndex = autoCreateCollectionIndex;
   }
-  
-  /** Treat the index name as an alias. */
+ 
+  /** Treat the index name as an alias.
+   * @param indexNameIsAlias */
   public void setIndexNameIsAlias(boolean indexNameIsAlias) {
     this.indexNameIsAlias = indexNameIsAlias;
   }
   
-  /** Version 6+ */
+  /** Version 6+
+   * @return  */
   public boolean getIs6Plus() {
     return is6Plus;
   }
-  /** Version 6+ */
+  /** Version 6+
+   * @param is6Plus */
   public void setIs6Plus(boolean is6Plus) {
     this.is6Plus = is6Plus;
   }
   
-  /** Version 7+ */
+  /** Version 7+
+   * @return  */
   public boolean getIs7Plus() {
     return is7Plus;
   }
-  /** Version 7+ */
+  /** Version 7+
+   * @param is7Plus */
   public void setIs7Plus(boolean is7Plus) {
     this.is7Plus = is7Plus;
   }
   
-  /** The index name holding metadata items. */
+  /** The index name holding metadata items.
+   * @return  */
   public String getItemIndexName() {
     return this.indexName;
   }
 
-  /** The item index type (default=item). */
+  /** The item index type (default=item).
+   * @return  */
   public String getItemIndexType() {
     return this.itemIndexType;
   }
-  /** The item index type (default=item). */
+  /** The item index type (default=item).
+   * @param itemIndexType */
   public void setItemIndexType(String itemIndexType) {
     this.itemIndexType = itemIndexType;
   }
@@ -268,7 +316,7 @@ private String base64Iv = "";
       final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 
     credentialsProvider.setCredentials(AuthScope.ANY,
-      new UsernamePasswordCredentials("admin", "admin"));
+      new UsernamePasswordCredentials("",""));
 
     //Create a client.
     org.opensearch.client.RestClientBuilder builder = org.opensearch.client.RestClient.builder(new HttpHost("localhost", 9200, "http"))
@@ -444,16 +492,25 @@ private String base64Iv = "";
 //   * @return the base url
 //   */
   public String getBaseUrl(boolean next) {
-    String node = null;
-    if (next) {
-      node = getNextNode();
-    } else {
-      node = nodesToArray()[0];
+	 String url;
+    
+    if(getAwsOpenSearchType().equals("serverless"))
+    {
+    	url = this.getAwsALBEndpoint();
     }
-    int port = getHttpPort();
-    String scheme = "http://";
-    if (getUseHttps()) scheme = "https://";
-    String url = scheme+node+":"+port;
+    else
+    {
+    	String node = null;
+        if (next) {
+          node = getNextNode();
+        } else {
+          node = nodesToArray()[0];
+        }
+        int port = getHttpPort();
+        String scheme = "http://";
+        if (getUseHttps()) scheme = "https://";
+        url = scheme+node+":"+port;
+    }
     return url;
   }
 //  

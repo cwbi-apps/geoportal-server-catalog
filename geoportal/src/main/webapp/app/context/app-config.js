@@ -2,7 +2,9 @@ define([],function(){var obj={
 // .......................................................................................
 
   system: {
-    searchLimit: 10000
+    searchLimit: 10000,
+    secureCatalogApp:false,
+    showTabs:"MapPanel,AdminPanel,AboutPanel,ApiPanel,CollectionsPanel"
   },
 
   edit: {
@@ -32,7 +34,7 @@ define([],function(){var obj={
     autoResize: true,
     wrapAround180: true,
     center: [-98, 40],
-    zoom: 3
+    zoom: 2
   },
 
   searchResults: {
