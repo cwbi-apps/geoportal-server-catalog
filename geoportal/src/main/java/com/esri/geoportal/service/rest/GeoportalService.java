@@ -116,6 +116,7 @@ public class GeoportalService {
       if (config != null && config.getKeycloakAuthUrl() != null && !config.getKeycloakAuthUrl().isEmpty()) {
         jso.add("keycloakAuth", Json.createObjectBuilder()
           .add("url", config.getKeycloakAuthUrl())
+          .add("client_id", config.getClientId())
         );
       }
 

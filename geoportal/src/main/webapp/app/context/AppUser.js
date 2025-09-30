@@ -14,6 +14,7 @@ function(declare, lang, Deferred, topic, appTopics, i18n, AppClient, SignIn,
     esriId, OAuthInfo, Portal) {
   const GPT_ACCESS_TOKEN_COOKIE_NAME = "GPT_access_token";
   const KEEP_SIGNED_IN_COOKIE_NAME = "GPT_keep_signed_in";
+  const ID_TOKEN_COOKIE_NAME = "GPT_id_token";
 	
   var oThisClass = declare(null, {
 
@@ -179,10 +180,21 @@ function(declare, lang, Deferred, topic, appTopics, i18n, AppClient, SignIn,
       return dfd;
     },
     
-    signOut: function() {
+    signOut: function () {
+      const match = document.cookie.match(new RegExp('(^| )' + ID_TOKEN_COOKIE_NAME + '=([^;]+)'));
+      const idTokenHint = match ? match[2] : null;
       this.deleteTokenInfo();
       esriId.destroyCredentials();
-      window.location.reload();
+      var ctx = window.AppContext;
+      if (ctx.geoportal && ctx.geoportal.keycloakAuth && ctx.geoportal.keycloakAuth.url) {
+        var keycloakLogout = ctx.geoportal.keycloakAuth.url.replace("/auth", "/logout") +
+          "?post_logout_redirect_uri=" + encodeURIComponent(window.location.origin + "/catalog") +
+          "&id_token_hint=" + idTokenHint +
+          "&client_id=" + ctx.geoportal.keycloakAuth.client_id;
+        window.location.href = keycloakLogout;
+      } else {
+        window.location.reload();
+      }
     },
     
     whenAppStarted: function() {
@@ -243,23 +255,24 @@ function(declare, lang, Deferred, topic, appTopics, i18n, AppClient, SignIn,
     },
     
     preserveTokenInfo: function(cValue, cexpires) {
-      var expires = "expires=" + cexpires.toUTCString();
-      var domain = "domain=" + location.hostname;
-      var path = "path=/" + location.pathname.replaceAll(/^\/+|\/+$/gi,"");
-      var value = btoa(typeof cValue === "object"? JSON.stringify(cValue): cValue);
+      const expires = "expires=" + cexpires.toUTCString();
+      const domain = "domain=" + location.hostname;
+      const path = "path=/" + location.pathname.replaceAll(/^\/+|\/+$/gi,"");
+      const value = btoa(typeof cValue === "object"? JSON.stringify(cValue): cValue);
       document.cookie = KEEP_SIGNED_IN_COOKIE_NAME + "=" + value + "; " + expires + "; " + domain + "; " + path;
     },
     
     deleteTokenInfo: function() {
-      var domain = "domain=" + location.hostname;
-      var path = "path=/" + location.pathname.replaceAll(/^\/+|\/+$/gi,"");
+      const domain = "domain=" + location.hostname;
+      const path = "path=/" + location.pathname.replaceAll(/^\/+|\/+$/gi,"");
       document.cookie = KEEP_SIGNED_IN_COOKIE_NAME + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; " + domain + "; " + path;
-      document.cookie = GPT_ACCESS_TOKEN_COOKIE_NAME + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
+      document.cookie = GPT_ACCESS_TOKEN_COOKIE_NAME + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; " + domain + "; path=/catalog";
+      document.cookie = ID_TOKEN_COOKIE_NAME + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; " + domain + "; path=/catalog";
     },
 
     retrieveTokenInfo: function() {
-      var name = KEEP_SIGNED_IN_COOKIE_NAME + "=";
-      var ca = document.cookie.split(';');
+      const name = KEEP_SIGNED_IN_COOKIE_NAME + "=";
+      const ca = document.cookie.split(';');
       
       for(var i = 0; i < ca.length; i++) {
         var c = ca[i];
