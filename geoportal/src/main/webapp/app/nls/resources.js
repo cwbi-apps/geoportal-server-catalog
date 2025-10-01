@@ -19,6 +19,7 @@ define({
       cancel: "Cancel",
       clear: "Clear",
       close: "Close",
+      copy: "Copy",
       del: "Delete",
       error: "Error",
       ok: "OK",
@@ -50,6 +51,7 @@ define({
         createMetadata: "Create Metadata",
         myProfile: "My Profile",
         uploadMetadata: "Upload Metadata",
+        showToken: "Display Token",
         editFacet: "Edit Facet"
       }
     },
@@ -367,6 +369,9 @@ define({
           field: "Field Name",
           value: "Value",
         }
+      },
+      showToken: {
+        caption: "Authentication Token"
       },
       uploadMetadata: {
         caption: "Upload Metadata",

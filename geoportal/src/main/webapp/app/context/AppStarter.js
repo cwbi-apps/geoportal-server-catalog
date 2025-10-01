@@ -3,10 +3,11 @@ define(["dojo/_base/declare",
         "dojo/dom-construct",
         "dojo/_base/fx",
         "dojo/topic",
+        "dijit/registry",
         "app/context/app-topics",
         "app/context/AppClient",
         "app/main/App"],
-function(declare, lang, domConstruct, fx, topic, appTopics, AppClient, App) {
+function(declare, lang, domConstruct, fx, topic, registry, appTopics, AppClient, App) {
   const GPT_ACCESS_TOKEN_COOKIE_NAME = "GPT_access_token";
 
   var oThisClass = declare(null, {
@@ -21,6 +22,10 @@ function(declare, lang, domConstruct, fx, topic, appTopics, AppClient, App) {
       const self = this;
 
       var showApp = function() {
+        if(registry.byId("app")) {
+          console.warn("Application has already been registered; ignoring redundant request.");
+          return;
+        }
         var app = new App({},"app");
         app.startup();
         fx.fadeOut({

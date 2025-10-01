@@ -29,10 +29,11 @@ define(["dojo/_base/declare",
         "app/main/CartPanel",
         "app/main/AboutPanel",
         "app/content/MetadataEditor",
-        "app/content/UploadMetadata"],
+        "app/content/UploadMetadata",
+        "app/content/ShowToken"],
 function(declare, lang, array, topic, appTopics, router, Templated, template, i18n, util, 
     SearchPanel, MapPanel, APIPanel, CollectionsPanel, CartPanel, AboutPanel,
-    MetadataEditor, UploadMetadata) {
+    MetadataEditor, UploadMetadata, ShowToken) {
 
   var oThisClass = declare([Templated], {
 
@@ -165,6 +166,10 @@ function(declare, lang, array, topic, appTopics, router, Templated, template, i1
 
     signOutClicked: function() {
       AppContext.appUser.signOut();
+    },
+
+    showTokenClicked: function() {
+      if (AppContext.appUser.isPublisher()) (new ShowToken()).show();
     },
 
     uploadClicked: function() {
