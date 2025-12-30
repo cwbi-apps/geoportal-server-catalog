@@ -118,7 +118,7 @@ function(declare, lang, Deferred, topic, appTopics, i18n, AppClient, SignIn,
       if (ctx.geoportal && ctx.geoportal.keycloakAuth && ctx.geoportal.keycloakAuth.url) {
         var redirectUri = encodeURIComponent(window.location.origin + "/catalog/keycloak-callback");
         window.location.href = ctx.geoportal.keycloakAuth.url +
-            "?client_id=" +ctx.geoportal.keycloakAuth.client_id
+            "?client_id=" + ctx.geoportal.keycloakAuth.client_id +
             "&response_type=code" +
             "&scope=openid" +
             "&redirect_uri=" + redirectUri;
