@@ -244,6 +244,14 @@ public class XsltTemplate {
       String sMsg = "The XsltTemplate has not been compiled: "+getSystemId();
       throw new TransformerConfigurationException(sMsg);
     }
+    //#Issue 686 commented this
+//    TransformerFactory factory = TransformerFactory.newInstance();
+//    factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+//    factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+//    factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+//    
+//    Transformer transformer = factory.newTransformer();
+    
     Transformer transformer = getTemplates().newTransformer();
     if (mapParams != null) {
       for (Iterator it = mapParams.entrySet().iterator();it.hasNext();) {
@@ -271,7 +279,7 @@ public class XsltTemplate {
     TransformerFactory factory = TransformerFactory.newInstance();
     factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD,"");
     factory.setFeature("http://javax.xml.XMLConstants/feature/secure-processing",true);
-    //factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
+    factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
     Templates templates = factory.newTemplates(new StreamSource(xslReader));
     Transformer transformer = templates.newTransformer();
     if (mapParams != null) {

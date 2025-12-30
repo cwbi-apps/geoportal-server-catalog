@@ -27,8 +27,9 @@ define(["dojo/_base/declare",
         "app/search/DropPane",
         "app/search/Paging",
         "dojox/widget/Standby",
+        "dijit/registry",
         "app/etc/util"],
-    function (declare, lang, array, aspect, domConstruct, query, on, domClass, template, i18n, SearchComponent, ItemCard, DropPane, Paging, Standby, Util) {
+    function (declare, lang, array, aspect, domConstruct, query, on, domClass, template, i18n, SearchComponent, ItemCard, DropPane, Paging, Standby, registry,Util) {
 
         var oThisClass = declare([SearchComponent], {
 
@@ -115,6 +116,8 @@ define(["dojo/_base/declare",
                 });
                 array.forEach(rm, function (child) {
                     this.itemsNode.removeChild(child);
+                    var d = registry.byNode(child);  
+                    if(d) d.destroy();
                 }, this);
             },
 
@@ -131,16 +134,21 @@ define(["dojo/_base/declare",
                   this.sortField = Util.getRequestParam("sort").split(":")[0];
                   this.sortDir = Util.getRequestParam("sort").split(":")[1];
                 }
-                if (this.sortField !== null && this.sortDir !== null) {
-                	if(this.sortDir == 'asc')
-                		{
-                			params.urlParams.sort = this.sortField;
-                		}
+                if (this.sortField && this.sortDir) {
+                	if(typeof this.sortField== "object" && "title.keyword" in this.sortField && this.sortDir == 'asc') 
+            		{
+                		params.urlParams.sort = this.sortField;
+            		}
+                	else if(typeof this.sortField== "object" && "title.keyword" in this.sortField && this.sortDir == 'desc')
+            		{
+                		params.urlParams.sort = AppContext.appConfig.searchResults.sortDesc;
+            		}
                 	else
-                		{
-                			params.urlParams.sort = AppContext.appConfig.searchResults.sortDesc;
-                		}
-                    
+            		{
+                		var sortObj ={};
+                    	sortObj[this.sortField] = this.sortDir;
+                        params.urlParams.sort = sortObj;
+            		}                	
                 }
                 this.statusNode.show();
             },

@@ -359,7 +359,7 @@
     prepareSort: {writable:true,value:function(task,targetRequest) {
       var sortables = this.schema.sortables;
       if (!sortables) return;
-
+      print("sortables ",JSON.stringify(sortables));
       var getField = function(v) {
         v = v.toLowerCase();
         for (var k in sortables) {
@@ -373,17 +373,21 @@
       };
 
       var sort = [], sortOptions = task.request.getSortOptions();
+      //print("ElasticTarget sortOptions ",JSON.stringify(sortOptions));
       if (Array.isArray(sortOptions)) {
         sortOptions.forEach(function(sortOption){
           var field = getField(sortOption.field);
+          //print("sort field ",field);
           if (typeof field === "string" && field.length > 0) {
             var option = {};
             if (sortOption.order === "asc") {
 				if(field ==='title')
 				{
-					option['title.keyword']={"order": "asc", "unmapped_type": "String"}
+					//print("sort field title asc");
+					option['title.keyword']={"order": "asc", "unmapped_type": "keyword"}
 				}
 				else{
+					//print("sort field not title");
 					option[field] = "asc";
 				}
 					
@@ -391,9 +395,11 @@
             } else if (sortOption.order === "desc") {
 				if(field ==='title')
 				{
-					option['title.keyword']={"order": "desc", "unmapped_type": "String"}
+					//print("sort field title desc");
+					option['title.keyword']={"order": "desc", "unmapped_type": "keyword"}
 				}
 				else{
+					//print("sort field not title desc");
 					option[field] = "desc";
 				}				
               
@@ -406,6 +412,7 @@
       }
       if (sort) {
         targetRequest.searchCriteria["sort"] = sort;
+        //console.log("final sort ", JSON.stringify(targetRequest.searchCriteria["sort"]));
       }
     }},
 

@@ -12,9 +12,7 @@ define(["dojo/_base/declare",
         ], 
 function(declare, lang, Deferred, topic, appTopics, i18n, AppClient, SignIn, 
     esriId, OAuthInfo, Portal) {
-  const GPT_ACCESS_TOKEN_COOKIE_NAME = "GPT_access_token";
-  const KEEP_SIGNED_IN_COOKIE_NAME = "GPT_keep_signed_in";
-  const ID_TOKEN_COOKIE_NAME = "GPT_id_token";
+  var KEEP_SIGNED_IN_COOKIE_NAME = "GPT_keep_signed_in";
 	
   var oThisClass = declare(null, {
 
