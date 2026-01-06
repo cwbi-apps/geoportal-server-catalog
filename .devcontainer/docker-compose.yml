@@ -1,0 +1,62 @@
+services:
+  datacatalog:
+    platform: linux/arm64
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    env_file: ../devops/.env
+    volumes:
+      - ..:/workspace
+      - m2:/home/vscode/.m2
+      - tomcat-webapps:/opt/tomcat/webapps
+      - ../devops/setenv.sh:/opt/tomcat/bin/setenv.sh
+      - ../devops/authentication:/opt/tomcat/conf/authentication
+    hostname: localhost
+    ports:
+      - "7010:8080"
+      - "5005:5005"
+    environment:
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      es_node: opensearch
+      gpt_elasticPort: 9200
+      gpt_elasticHttps: false
+      gpt_base64Iv: not-used-but-exception-if-not-provided
+      gpt_base64Key: not-used-but-exception-if-not-provided
+      gpt_elasticUser: admin
+      gpt_authentication: authentication-simple.xml
+    depends_on:
+      - opensearch
+    command: ["bash", "-c", "/opt/tomcat/bin/catalina.sh run"]
+
+  opensearch:
+    image: opensearchproject/opensearch:3.4.0
+    platform: linux/arm64 # Use ARM64 on M1/M2 Macs
+    init: true
+    env_file:
+      - ../devops/.env
+    environment:
+      cluster.name: elasticsearch
+      node.name: search
+      discovery.seed_hosts: search
+      cluster.initial_cluster_manager_nodes: search
+      bootstrap.memory_lock: "true"
+      OPENSEARCH_JAVA_OPTS: -Xms512m -Xmx512m
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      bootstrap.system_call_filter: "false"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ../devops/opensearch-data:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+
+volumes:
+  m2:
+  tomcat-webapps:

@@ -1,16 +1,15 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.dcat;
 
@@ -31,9 +30,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -43,145 +42,151 @@ import org.slf4j.LoggerFactory;
 /**
  * DCAT builder.
  * 
- * Provides uniform way for building aggregated DCAT file. It iterates through
- * all records in the Elastic page by page, then combines it into a single file.
+ * Provides uniform way for building aggregated DCAT file. It iterates through all records in the
+ * Elastic page by page, then combines it into a single file.
  */
 public class DcatBuilder {
   /**
    * Logger
    */
   private static final Logger LOGGER = LoggerFactory.getLogger(DcatBuilder.class);
-  
+
   /** The script engines. */
-  private static final Map<String,ScriptEngine> ENGINES = Collections.synchronizedMap(new HashMap<String,ScriptEngine>());
-  
+  private static final Map<String, ScriptEngine> ENGINES =
+      Collections.synchronizedMap(new HashMap<String, ScriptEngine>());
+
   private String baseUrl = "http://localhost:8080/geoportal";
+
   public String getBaseUrl() {
-	return baseUrl;
-	}
-	
-	public void setBaseUrl(String baseUrl) {
-		this.baseUrl = baseUrl;
-	}
-	
-  
+    return baseUrl;
+  }
+
+  public void setBaseUrl(String baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+
   /** JSON processing. */
   private static final ObjectMapper MAPPER = new ObjectMapper();
   static {
     MAPPER.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL);
   }
-  
+
   /** Instance variables. */
   private String javascriptFile = "gs/context/nashorn/execute.js";
   private final DcatCache dcatCache;
-  
+
   /**
    * Creates instance of the builder.
+   * 
    * @param dcatCache DCAT cache
    */
   public DcatBuilder(DcatCache dcatCache) {
     this.dcatCache = dcatCache;
   }
-  
+
   /**
    * Builds DCAT aggregated file.
+   * 
    * @param dcatContext context
    */
   public void build(DcatContext dcatContext) {
     try {
       LOGGER.info(String.format("Starting building aggregated DCAT file..."));
-      execute(dcatContext, getSelfInfo(), getCachedEngine(javascriptFile),getBaseUrl());
-    } catch(Exception ex) {
+      execute(dcatContext, getSelfInfo(), getCachedEngine(javascriptFile), getBaseUrl());
+    } catch (Exception ex) {
       LOGGER.error(String.format("Error building aggregated DCAT file!"), ex);
     }
   }
-  
-  
 
-private void execute(DcatContext dcatContext, String selfInfo, ScriptEngine engine, String baseUrl) {
-      DcatRequestImpl request = new DcatRequestImpl(dcatContext, selfInfo, engine,baseUrl );
-      synchronized (request) {
-        request.execute();
-        try {
-          request.wait();
-        } catch(InterruptedException ignore) {
-        }
+
+
+  private void execute(DcatContext dcatContext, String selfInfo, ScriptEngine engine,
+      String baseUrl) {
+    DcatRequestImpl request = new DcatRequestImpl(dcatContext, selfInfo, engine, baseUrl);
+    synchronized (request) {
+      request.execute();
+      try {
+        request.wait();
+      } catch (InterruptedException ignore) {
       }
+    }
   }
-  
-  private ScriptEngine getCachedEngine(String javascriptFile) 
+
+  private ScriptEngine getCachedEngine(String javascriptFile)
       throws URISyntaxException, IOException, ScriptException {
     ScriptEngine engine = null;
-    synchronized(ENGINES) {
+    synchronized (ENGINES) {
       engine = ENGINES.get(javascriptFile);
       if (engine == null) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(javascriptFile);
         URI uri = url.toURI();
-        String script = new String(Files.readAllBytes(Paths.get(uri)),"UTF-8");
+        String script = new String(Files.readAllBytes(Paths.get(uri)), "UTF-8");
         ScriptEngineManager engineManager = new ScriptEngineManager();
         engine = engineManager.getEngineByName("nashorn");
         engine.eval(script);
-        ENGINES.put(javascriptFile,engine);
+        ENGINES.put(javascriptFile, engine);
       }
     }
     return engine;
   }
-  
+
   private String getSelfInfo() {
     JsonObjectBuilder info = Json.createObjectBuilder();
     JsonObjectBuilder elastic = Json.createObjectBuilder();
     GeoportalContext gc = com.esri.geoportal.context.GeoportalContext.getInstance();
-    ElasticContext ec = com.esri.geoportal.context.GeoportalContext.getInstance().getElasticContext();
+    ElasticContext ec =
+        com.esri.geoportal.context.GeoportalContext.getInstance().getElasticContext();
     String node = null;
     String scheme = "http://";
     int port = 9200;
     try {
-    
-	if (ec.getUseHttps()) {
+
+      if (ec.getUseHttps()) {
         scheme = "https://";
       }
-	 if(ec.getAwsOpenSearchType().equals("serverless"))
-     {
-   	  	elastic.add("searchUrl",ec.getAwsALBEndpoint()+"/"+ec.getIndexName()+"/_search"); 
-     }
-	 else {
-    	 node = ec.getNextNode();
-         port = ec.getHttpPort();
-         String username = ec.getUsername();
-         String password = ec.getPassword();
-         if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-           elastic.add("username",username);
-           elastic.add("password",password);
-         }
-     }
+      if (ec.getAwsOpenSearchType().equals("serverless")) {
+        elastic.add("searchUrl", ec.getAwsALBEndpoint() + "/" + ec.getIndexName() + "/_search");
+      } else {
+        node = ec.getNextNode();
+        port = ec.getHttpPort();
+        String username = ec.getUsername();
+        String password = ec.getPassword();
+        if (username != null && username.length() > 0 && password != null
+            && password.length() > 0) {
+          elastic.add("username", username);
+          elastic.add("password", password);
+        }
+      }
     } catch (Throwable t) {
       LOGGER.warn(String.format("Warning getting self info."), t);
     }
     try {
       JsonObjectBuilder access = Json.createObjectBuilder();
-      access.add("supportsApprovalStatus",com.esri.geoportal.context.GeoportalContext.getInstance().getSupportsApprovalStatus());
-      access.add("supportsGroupBasedAccess",com.esri.geoportal.context.GeoportalContext.getInstance().getSupportsGroupBasedAccess()); 
-      elastic.add("access",access);
+      access.add("supportsApprovalStatus",
+          com.esri.geoportal.context.GeoportalContext.getInstance().getSupportsApprovalStatus());
+      access.add("supportsGroupBasedAccess",
+          com.esri.geoportal.context.GeoportalContext.getInstance().getSupportsGroupBasedAccess());
+      elastic.add("access", access);
     } catch (Throwable t) {
       LOGGER.warn(String.format("Warning getting self info."), t);
     }
     if ((node != null) && (node.length() > 0)) {
-      String idxName = ec.getIndexName();      
-      //For elastic 7.9.3 +
-      String url = scheme+node+":"+port+"/"+idxName+"/_search";
-      elastic.add("searchUrl",url);
+      String idxName = ec.getIndexName();
+      // For elastic 7.9.3 +
+      String url = scheme + node + ":" + port + "/" + idxName + "/_search";
+      elastic.add("searchUrl", url);
     }
-      
-      if(ec.getAwsOpenSearchType().equals("serverless") || ((node != null) && (node.length() > 0)))
-      {
-      	info.add("elastic",elastic);
-         return info.build().toString();
-      }   
-    
+
+    if (ec.getAwsOpenSearchType().equals("serverless") || ((node != null) && (node.length() > 0))) {
+      info.add("elastic", elastic);
+      return info.build().toString();
+    }
+
     return null;
   }
-  
+
   private class DcatRequestImpl extends DcatRequest {
     private DcatCacheOutputStream outputStream = null;
     private PrintWriter writer = null;
@@ -190,16 +195,17 @@ private void execute(DcatContext dcatContext, String selfInfo, ScriptEngine engi
     public DcatRequestImpl(DcatContext dcatContext, String selfInfo, ScriptEngine engine) {
       super(dcatContext, selfInfo, engine);
     }
-    
-    public DcatRequestImpl(DcatContext dcatContext, String selfInfo, ScriptEngine engine, String requestInfo) {
-        super(dcatContext, selfInfo, engine,requestInfo);
-      }
+
+    public DcatRequestImpl(DcatContext dcatContext, String selfInfo, ScriptEngine engine,
+        String requestInfo) {
+      super(dcatContext, selfInfo, engine, requestInfo);
+    }
 
     @Override
     public void onRec(DcatHeader header, String rec) throws IOException {
       if (!open) {
         prepareForWriting();
-        
+
         writer.println("{");
         writer.println(String.format("\"conformsTo\": \"%s\",", header.conformsTo));
         writer.println(String.format("\"describedBy\": \"%s\",", header.describedBy));
@@ -207,13 +213,13 @@ private void execute(DcatContext dcatContext, String selfInfo, ScriptEngine engi
         writer.println(String.format("\"type\": \"%s\",", header.type));
         writer.println("\"dataset:\": [");
       }
-      
+
       if (open) {
         writer.print(",");
       }
-      
+
       writer.print(rec);
-      
+
       if (!open) {
         open = true;
       }
@@ -228,38 +234,40 @@ private void execute(DcatContext dcatContext, String selfInfo, ScriptEngine engi
         LOGGER.info(String.format("Completed building aggregated DCAT file :)"));
         close();
       } else {
-        if (exception!=null) {
+        if (exception != null) {
           LOGGER.error(String.format("Error building aggregated DCAT file!"), exception);
         }
         abort();
       }
-      
-      synchronized(this) {
+
+      synchronized (this) {
         this.notifyAll();
       }
     }
-    
+
     private void close() {
       writer.flush();
-      if (outputStream!=null) {
+      if (outputStream != null) {
         try {
           outputStream.close();
-        } catch (IOException ignore) {}
+        } catch (IOException ignore) {
+        }
       }
     }
-    
+
     private void abort() {
-      if (outputStream!=null) {
+      if (outputStream != null) {
         try {
           outputStream.abort();
-        } catch (IOException ignore) {}
+        } catch (IOException ignore) {
+        }
       }
     }
-    
+
     private void prepareForWriting() throws IOException {
       outputStream = dcatCache.createOutputCacheStream();
       writer = new PrintWriter(new OutputStreamWriter(outputStream, "UTF-8"));
     }
-    
+
   }
 }

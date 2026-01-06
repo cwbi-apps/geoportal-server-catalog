@@ -1,18 +1,18 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.search;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,20 +24,20 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.container.AsyncResponse;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.ResponseBuilder;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +49,10 @@ import com.esri.geoportal.lib.elastic.ElasticContext;
  * Search request (geoportal-search based).
  */
 public class SearchRequest {
-  
+
   /** The script engines. */
-  private static Map<String,ScriptEngine> ENGINES = Collections.synchronizedMap(new HashMap<String,ScriptEngine>());
+  private static Map<String, ScriptEngine> ENGINES =
+      Collections.synchronizedMap(new HashMap<String, ScriptEngine>());
   private static final Logger LOGGER = LoggerFactory.getLogger(SearchRequest.class);
   /** Instance variables. */
   public Object appUser;
@@ -61,25 +62,26 @@ public class SearchRequest {
 
   /** Constructor. */
   public SearchRequest() {}
-  
+
   /** Construct with an async response. */
   public SearchRequest(AsyncResponse asyncResponse) {
     this.asyncResponse = asyncResponse;
   }
-  
+
   /** Construct with an async response and user. */
   public SearchRequest(AsyncResponse asyncResponse, Object appUser) {
     this.asyncResponse = asyncResponse;
     this.appUser = appUser;
   }
-  
+
   /** Construct with a user. */
   public SearchRequest(Object appUser) {
     this.appUser = appUser;
   }
-  
+
   /**
    * Get the base url.
+   * 
    * @param hsr the request
    */
   public String getBaseUrl(HttpServletRequest hsr) {
@@ -88,32 +90,32 @@ public class SearchRequest {
     // Forwarded: for=192.0.2.60; proto=http; by=203.0.113.43
     // X-Forwarded-Proto (http vs https)
     // "reverseProxy.baseContextPath"
-    
+
     StringBuffer requestURL = hsr.getRequestURL();
     String ctxPath = hsr.getContextPath();
-    String baseUrl = requestURL.substring(0,requestURL.indexOf(ctxPath)+ctxPath.length());
+    String baseUrl = requestURL.substring(0, requestURL.indexOf(ctxPath) + ctxPath.length());
     return baseUrl;
   }
-  
+
   /** Get a cached script engine. */
-  protected ScriptEngine getCachedEngine(String javascriptFile) 
+  protected ScriptEngine getCachedEngine(String javascriptFile)
       throws URISyntaxException, IOException, ScriptException {
     ScriptEngine engine = null;
-    synchronized(ENGINES) {
+    synchronized (ENGINES) {
       engine = ENGINES.get(javascriptFile);
       if (engine == null) {
         URL url = Thread.currentThread().getContextClassLoader().getResource(javascriptFile);
         URI uri = url.toURI();
-        String script = new String(Files.readAllBytes(Paths.get(uri)),"UTF-8");
+        String script = new String(Files.readAllBytes(Paths.get(uri)), "UTF-8");
         ScriptEngineManager engineManager = new ScriptEngineManager();
         engine = engineManager.getEngineByName("nashorn");
         engine.eval(script);
-        ENGINES.put(javascriptFile,engine);
+        ENGINES.put(javascriptFile, engine);
       }
     }
     return engine;
   }
-  
+
   /** Get the request header map. */
   private JsonObjectBuilder getHeaderMap(HttpServletRequest hsr) {
     JsonObjectBuilder headers = Json.createObjectBuilder();
@@ -128,24 +130,25 @@ public class SearchRequest {
             String v = values.nextElement();
             jArray.add(v);
           }
-          headers.add(key,jArray);
+          headers.add(key, jArray);
         } else {
           headers.addNull(key);
         }
-      }      
+      }
     }
     return headers;
   }
-  
+
   /** The JavaScript file name. */
   public String getJavascriptFile() {
     return javascriptFile;
   }
+
   /** The JavaScript file name. */
   public void setJavascriptFile(String javascriptFile) {
     this.javascriptFile = javascriptFile;
   }
-  
+
   /** Get the request parameter map from the servlet request. */
   private JsonObjectBuilder getParameterMap(HttpServletRequest hsr) {
     JsonObjectBuilder params = Json.createObjectBuilder();
@@ -156,8 +159,9 @@ public class SearchRequest {
         String[] values = e.getValue();
         if (values != null) {
           JsonArrayBuilder jArray = Json.createArrayBuilder();
-          for (String v: values) jArray.add(v);
-          params.add(key,jArray);
+          for (String v : values)
+            jArray.add(v);
+          params.add(key, jArray);
         } else {
           params.addNull(key);
         }
@@ -165,143 +169,145 @@ public class SearchRequest {
     }
     return params;
   }
-  
+
   /** Get the request parameter map from the rest parameters. */
   private JsonObjectBuilder getParameterMap(MultivaluedMap<String, String> requestParams) {
     JsonObjectBuilder params = Json.createObjectBuilder();
     if (requestParams != null) {
-      for (Map.Entry<String,List<String>> e : requestParams.entrySet()) {
+      for (Map.Entry<String, List<String>> e : requestParams.entrySet()) {
         String key = e.getKey();
         List<String> values = e.getValue();
         if (values == null) {
           params.addNull(key);
         } else {
           JsonArrayBuilder jArray = Json.createArrayBuilder();
-          for (String v: values) jArray.add(v);
-          params.add(key,jArray);
+          for (String v : values)
+            jArray.add(v);
+          params.add(key, jArray);
         }
       }
     }
     return params;
   }
-  
+
   /** Get the Elasticsearch info for this Geoportal */
   private JsonObjectBuilder getSelfInfo() {
     JsonObjectBuilder info = Json.createObjectBuilder();
     JsonObjectBuilder elastic = Json.createObjectBuilder();
     GeoportalContext gc = com.esri.geoportal.context.GeoportalContext.getInstance();
-    ElasticContext ec = com.esri.geoportal.context.GeoportalContext.getInstance().getElasticContext();
+    ElasticContext ec =
+        com.esri.geoportal.context.GeoportalContext.getInstance().getElasticContext();
     String node = null;
     String scheme = "http://";
     int port = 9200;
-    try {     
+    try {
       if (ec.getUseHttps()) {
         scheme = "https://";
-        elastic.add("useHttps",true);
+        elastic.add("useHttps", true);
+      } else {
+        elastic.add("useHttps", false);
       }
-      else
-      {
-    	  elastic.add("useHttps",false);
-      }
-      if(ec.getAwsOpenSearchType().equals("serverless"))
-      {
-    	  elastic.add("searchUrl",ec.getAwsALBEndpoint()+"/"+ec.getIndexName()+"/_search"); 
-      }
-      else
-      {
-    	  node = ec.getNextNode();
-          port = ec.getHttpPort();
-    	  String username = ec.getUsername();
-          String password = ec.getPassword();
-    	  if (username != null && username.length() > 0 && password != null && password.length() > 0) {
-    	        elastic.add("username",username);
-    	        elastic.add("password",password);
-        	      
-          } 
+      if (ec.getAwsOpenSearchType().equals("serverless")) {
+        elastic.add("searchUrl", ec.getAwsALBEndpoint() + "/" + ec.getIndexName() + "/_search");
+      } else {
+        node = ec.getNextNode();
+        port = ec.getHttpPort();
+        String username = ec.getUsername();
+        String password = ec.getPassword();
+        if (username != null && username.length() > 0 && password != null
+            && password.length() > 0) {
+          elastic.add("username", username);
+          elastic.add("password", password);
+
+        }
       }
     } catch (Throwable t) {
-    	LOGGER.error(t.getMessage());
+      LOGGER.error(t.getMessage());
     }
     try {
       JsonObjectBuilder access = Json.createObjectBuilder();
-      access.add("supportsApprovalStatus",gc.getSupportsApprovalStatus());
-      access.add("supportsGroupBasedAccess",gc.getSupportsGroupBasedAccess());    
+      access.add("supportsApprovalStatus", gc.getSupportsApprovalStatus());
+      access.add("supportsGroupBasedAccess", gc.getSupportsGroupBasedAccess());
       com.esri.geoportal.context.AppUser user = null;
       if (this.appUser != null && this.appUser instanceof com.esri.geoportal.context.AppUser) {
-        user = (com.esri.geoportal.context.AppUser)appUser;
+        user = (com.esri.geoportal.context.AppUser) appUser;
       }
       if (user != null && user.getUsername() != null) {
-        access.add("username",user.getUsername());
-        access.add("isAdmin",user.isAdmin());
+        access.add("username", user.getUsername());
+        access.add("isAdmin", user.isAdmin());
         if (gc.getSupportsGroupBasedAccess()) {
           JsonArrayBuilder jsaGroups = Json.createArrayBuilder();
           List<com.esri.geoportal.base.security.Group> groups = user.getGroups();
           if (groups != null) {
-            for (com.esri.geoportal.base.security.Group group: groups) {
+            for (com.esri.geoportal.base.security.Group group : groups) {
               jsaGroups.add(group.id);
-            }         
+            }
           }
-          access.add("groups",jsaGroups);
+          access.add("groups", jsaGroups);
         }
       }
-      elastic.add("access",access);
+      elastic.add("access", access);
     } catch (Throwable t) {
       LOGGER.error(t.getMessage());
     }
     if ((node != null) && (node.length() > 0)) {
-      String idxName = ec.getIndexName();          
-      String url = scheme+node+":"+port+"/"+idxName+"/_search";
-      elastic.add("searchUrl",url);
-    }     
-    if(ec.getAwsOpenSearchType().equals("serverless") || ((node != null) && (node.length() > 0)))
-    {
-    	info.add("elastic",elastic);
-        return info;
+      String idxName = ec.getIndexName();
+      String url = scheme + node + ":" + port + "/" + idxName + "/_search";
+      elastic.add("searchUrl", url);
+    }
+    if (ec.getAwsOpenSearchType().equals("serverless") || ((node != null) && (node.length() > 0))) {
+      info.add("elastic", elastic);
+      return info;
     }
     return null;
   }
-  
+
   /** Get the task options. */
   private JsonObjectBuilder getTaskOptions(HttpServletRequest hsr) {
     JsonObjectBuilder options = Json.createObjectBuilder();
-    options.add("async",(this.asyncResponse != null));
-    //options.add("async",false);
+    options.add("async", (this.asyncResponse != null));
+    // options.add("async",false);
     return options;
   }
-  
+
   /**
    * Execute the request.
+   * 
    * @param hsr the servlet request
    */
   public void execute(HttpServletRequest hsr) {
-    this.execute(hsr,null,null);
+    this.execute(hsr, null, null);
   }
-  
+
   /**
    * Execute the request.
+   * 
    * @param hsr the servlet request
    * @param requestParams the rest parameters
    */
   public void execute(HttpServletRequest hsr, MultivaluedMap<String, String> requestParams) {
-    this.execute(hsr,requestParams,null);
+    this.execute(hsr, requestParams, null);
   }
-  
+
   /**
    * Execute the request.
+   * 
    * @param hsr the servlet request
    * @param body the request body
    */
   public void execute(HttpServletRequest hsr, String body) {
-    this.execute(hsr,null,body);
+    this.execute(hsr, null, body);
   }
-  
+
   /**
    * Execute the request.
+   * 
    * @param hsr the servlet request
    * @param requestParams the rest parameters
    * @param body the request body
    */
-  public void execute(HttpServletRequest hsr, MultivaluedMap<String, String> requestParams, String body) {
+  public void execute(HttpServletRequest hsr, MultivaluedMap<String, String> requestParams,
+      String body) {
     try {
       String url = hsr.getRequestURL().toString();
       String qstr = hsr.getQueryString();
@@ -309,37 +315,38 @@ public class SearchRequest {
         url += "?" + qstr;
       }
       JsonObjectBuilder info = Json.createObjectBuilder();
-      info.add("requestUrl",url);
-      if (body == null) info.addNull("requestBody");
-      else info.add("requestBody",body);
-      info.add("baseUrl",this.getBaseUrl(hsr));
-      info.add("headerMap",this.getHeaderMap(hsr));
+      info.add("requestUrl", url);
+      if (body == null)
+        info.addNull("requestBody");
+      else
+        info.add("requestBody", body);
+      info.add("baseUrl", this.getBaseUrl(hsr));
+      info.add("headerMap", this.getHeaderMap(hsr));
       if (requestParams != null) {
-        info.add("parameterMap",this.getParameterMap(requestParams));
+        info.add("parameterMap", this.getParameterMap(requestParams));
       } else {
-        info.add("parameterMap",this.getParameterMap(hsr));
+        info.add("parameterMap", this.getParameterMap(hsr));
       }
-      info.add("taskOptions",this.getTaskOptions(hsr));
+      info.add("taskOptions", this.getTaskOptions(hsr));
       String sRequestInfo = info.build().toString();
-      
+
       String sSelfInfo = null;
       JsonObjectBuilder selfInfo = this.getSelfInfo();
       if (selfInfo != null) {
         sSelfInfo = selfInfo.build().toString();
       }
-      
+
       ScriptEngine engine = this.getCachedEngine(this.javascriptFile);
-      Invocable invocable = (Invocable)engine;
-      invocable.invokeFunction("execute",this,sRequestInfo,sSelfInfo);
+      Invocable invocable = (Invocable) engine;
+      invocable.invokeFunction("execute", this, sRequestInfo, sSelfInfo);
     } catch (Throwable t) {
-    	LOGGER.error(t.getMessage());
+      LOGGER.error(t.getMessage());
       String msg = "{\"error\": \"Error processing request.\"}";
-      putResponse(500,MediaType.APPLICATION_JSON,msg,null);
+      putResponse(500, MediaType.APPLICATION_JSON, msg, null);
     }
   }
-  
-  public String mergeAccessQuery(HttpServletRequest hsr, String body) 
-      throws Exception{
+
+  public String mergeAccessQuery(HttpServletRequest hsr, String body) throws Exception {
     String url = hsr.getRequestURL().toString();
     String qstr = hsr.getQueryString();
     if (qstr != null && qstr.length() > 0) {
@@ -351,26 +358,28 @@ public class SearchRequest {
       sSelfInfo = selfInfo.build().toString();
     }
     ScriptEngine engine = this.getCachedEngine(this.javascriptFile);
-    Invocable invocable = (Invocable)engine;
-    return (String)invocable.invokeFunction("mergeAccessQuery",sSelfInfo,url,body);
+    Invocable invocable = (Invocable) engine;
+    return (String) invocable.invokeFunction("mergeAccessQuery", sSelfInfo, url, body);
   }
-  
+
   /**
    * Put the response.
+   * 
    * @param status the status
-   * @param mediaType the media type 
+   * @param mediaType the media type
    * @param entity the response body
    */
-  public void putResponse(int status, String mediaType, String entity, Map<String,String> headers) {
-    //System.err.println(status);
-    //System.err.println(entity);
-    //System.err.println(entity.substring(0,1000));
+  public void putResponse(int status, String mediaType, String entity,
+      Map<String, String> headers) {
+    // System.err.println(status);
+    // System.err.println(entity);
+    // System.err.println(entity.substring(0,1000));
     Status rStatus = Status.fromStatusCode(status);
     MediaType rMediaType = MediaType.valueOf(mediaType).withCharset("UTF-8");
     ResponseBuilder r = Response.status(rStatus).entity(entity).type(rMediaType);
     if (headers != null) {
-      for (Map.Entry<String,String> entry: headers.entrySet()) {
-        r.header(entry.getKey(),entry.getValue());
+      for (Map.Entry<String, String> entry : headers.entrySet()) {
+        r.header(entry.getKey(), entry.getValue());
       }
     }
     this.response = r.build();
@@ -378,5 +387,5 @@ public class SearchRequest {
       this.asyncResponse.resume(this.response);
     }
   }
-  
+
 }

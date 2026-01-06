@@ -1,18 +1,18 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.lib.elastic.http.request;
+
 import com.esri.geoportal.base.metadata.Evaluator;
 import com.esri.geoportal.base.util.JsonUtil;
 import com.esri.geoportal.base.xml.XmlUtil;
@@ -29,9 +29,9 @@ import com.esri.geoportal.search.StacHelper;
 
 import java.io.FileNotFoundException;
 
-import javax.json.JsonObject;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.json.JsonObject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,23 +41,24 @@ import org.slf4j.LoggerFactory;
  * Transform metadata.
  */
 public class TransformMetadataRequest extends BulkEditRequest {
-  
+
   /** Instance variables. */
   private boolean forItemDetails;
   private String id;
   private String xml;
   private String xslt;
   private static final Logger LOGGER = LoggerFactory.getLogger(TransformMetadataRequest.class);
-    
+
   /** Constructor. */
   public TransformMetadataRequest() {
     super();
   }
-  
+
   /** True if the transformation is for the item details */
   public boolean getForItemDetails() {
     return forItemDetails;
   }
+
   /** True if the transformation is for the item details */
   public void setForItemDetails(boolean forItemDetails) {
     this.forItemDetails = forItemDetails;
@@ -67,6 +68,7 @@ public class TransformMetadataRequest extends BulkEditRequest {
   public String getId() {
     return id;
   }
+
   /** The item id. */
   public void setId(String id) {
     this.id = id;
@@ -76,20 +78,22 @@ public class TransformMetadataRequest extends BulkEditRequest {
   public String getXml() {
     return xml;
   }
+
   /** The metadata xml */
   public void setXml(String xml) {
     this.xml = xml;
   }
-  
+
   /** The path to the transformation xslt (under resources/metadata) */
   public String getXslt() {
     return xslt;
   }
+
   /** The path to the transformation xslt (under resources/metadata) */
   public void setXslt(String xslt) {
     this.xslt = xslt;
   }
-  
+
   @Override
   public AppResponse execute() throws Exception {
     if (!getForItemDetails()) {
@@ -104,22 +108,22 @@ public class TransformMetadataRequest extends BulkEditRequest {
     ElasticContext ec = GeoportalContext.getInstance().getElasticContext();
     AccessUtil au = new AccessUtil();
     id = au.determineId(id);
-    au.ensureReadAccess(getUser(),id);
-    
+    au.ensureReadAccess(getUser(), id);
+
     try {
       ItemUtil itemUtil = new ItemUtil();
-      JsonObject item = itemUtil.readItemJson(ec.getIndexName(),ec.getActualItemIndexType(),id);
+      JsonObject item = itemUtil.readItemJson(ec.getIndexName(), ec.getActualItemIndexType(), id);
       if (item == null) {
-        response.writeIdNotFound(this,id);
+        response.writeIdNotFound(this, id);
       } else {
         String err = null, key = null, xml = null;
         if (ec.getUseSeparateXmlItem()) {
-          xml = itemUtil.readXml(ec.getIndexName(),id,itemUtil.getItemSource(item));
+          xml = itemUtil.readXml(ec.getIndexName(), id, itemUtil.getItemSource(item));
         } else {
           try {
             xml = item.getJsonObject("_source").getString(FieldNames.FIELD_SYS_XML);
           } catch (Exception e) {
-        	  LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage());
           }
         }
         if (xml == null || xml.length() == 0) {
@@ -128,16 +132,16 @@ public class TransformMetadataRequest extends BulkEditRequest {
           try {
             key = item.getJsonObject("_source").getString(FieldNames.FIELD_SYS_METADATATYPE);
           } catch (Exception e) {
-        	  LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage());
           }
           if (key == null || key.length() == 0) {
-            err = "Empty item "+FieldNames.FIELD_SYS_METADATATYPE;
+            err = "Empty item " + FieldNames.FIELD_SYS_METADATATYPE;
           } else {
-            Evaluator evaluator = GeoportalContext.getInstance().getBeanIfDeclared(
-                "metadata.Evaluator",Evaluator.class,new Evaluator());
+            Evaluator evaluator = GeoportalContext.getInstance()
+                .getBeanIfDeclared("metadata.Evaluator", Evaluator.class, new Evaluator());
             String xslt = evaluator.getDetailsXslt(key);
             if (xslt == null || xslt.length() == 0) {
-              err = "The detailsXslt was not configured for this metadata type: "+key;
+              err = "The detailsXslt was not configured for this metadata type: " + key;
             } else {
               setXml(xml);
               setXslt(xslt);
@@ -145,18 +149,19 @@ public class TransformMetadataRequest extends BulkEditRequest {
             }
           }
         }
-        String json = JsonUtil.newErrorResponse(err,getPretty());
-        response.writeNotImplemented(this,json);
+        String json = JsonUtil.newErrorResponse(err, getPretty());
+        response.writeNotImplemented(this, json);
       }
     } catch (FileNotFoundException e) {
-      response.writeIdNotFound(this,id);
+      response.writeIdNotFound(this, id);
     }
-    
+
     return response;
   }
-  
+
   /**
    * Transform.
+   * 
    * @return the response
    * @throws Exception
    */
@@ -165,19 +170,21 @@ public class TransformMetadataRequest extends BulkEditRequest {
     String xml = XmlUtil.identity(this.getXml());
     String xslt = getXslt();
     if (xslt == null || xslt.length() == 0) {
-      response.writeMissingParameter(this,"xslt");
+      response.writeMissingParameter(this, "xslt");
       return response;
     }
-    
-    if (!xslt.startsWith("metadata/")) xslt = "metadata/"+xslt;
+
+    if (!xslt.startsWith("metadata/"))
+      xslt = "metadata/" + xslt;
     XsltTemplate xsltTemplate = XsltTemplates.getCompiledTemplate(xslt);
     String result = xsltTemplate.transform(xml);
-    writeOk(response,result);
+    writeOk(response, result);
     return response;
   }
-  
+
   /**
-   * Write the response. 
+   * Write the response.
+   * 
    * @param response the response
    * @param result the result
    */
@@ -190,6 +197,6 @@ public class TransformMetadataRequest extends BulkEditRequest {
       response.setMediaType(MediaType.APPLICATION_XML_TYPE.withCharset("UTF-8"));
     }
     response.setStatus(Response.Status.OK);
-  } 
-  
+  }
+
 }

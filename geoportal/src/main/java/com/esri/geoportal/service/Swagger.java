@@ -1,18 +1,18 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.service;
+
 import com.esri.geoportal.context.AppResponse;
 import com.esri.geoportal.search.StacHelper;
 
@@ -23,14 +23,14 @@ import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.ApplicationPath;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.Application;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +38,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Swagger API configuration and redirect.
  * <p>
- *   http://host:port/geoportal/swagger/swagger.json
+ * http://host:port/geoportal/swagger/swagger.json
  * </p>
  */
 @ApplicationPath("swagger")
 @Path("swagger.json")
 public class Swagger extends Application {
-	private static final Logger LOGGER = LoggerFactory.getLogger(Swagger.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Swagger.class);
+
   @Override
   public Set<Class<?>> getClasses() {
     Set<Class<?>> resources = new HashSet<Class<?>>();
@@ -64,12 +65,12 @@ public class Swagger extends Application {
       contextPath = StringEscapeUtils.escapeJson(contextPath);
       ClassLoader classLoader = this.getClass().getClassLoader();
       File file = new File(classLoader.getResource(fileName).getFile());
-      String v = new String(Files.readAllBytes(file.toPath()),"UTF-8");
-      v = v.replaceAll("\\$\\{contextPath}",contextPath);
+      String v = new String(Files.readAllBytes(file.toPath()), "UTF-8");
+      v = v.replaceAll("\\$\\{contextPath}", contextPath);
       return Response.ok(v).type(MediaType.APPLICATION_JSON_TYPE.withCharset("UTF-8")).build();
-    } catch(Exception ex) {
-    	LOGGER.error(ex.getMessage());
-      return (new AppResponse()).buildException(ex,pretty);
+    } catch (Exception ex) {
+      LOGGER.error(ex.getMessage());
+      return (new AppResponse()).buildException(ex, pretty);
     }
   }
 

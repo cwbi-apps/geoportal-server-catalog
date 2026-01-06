@@ -1,0 +1,27 @@
+{
+  "name": "Data Catalog Dev (ARM)",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "datacatalog",
+  "workspaceFolder": "/workspace",
+  "runServices": ["datacatalog", "opensearch"],
+  "shutdownAction": "stopCompose",
+
+  "forwardPorts": [8080, 9200, 5005],
+
+  "remoteUser": "vscode",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.java",
+        "ms-python.python",
+        "ms-vscode.makefile-tools",
+        "vscjava.vscode-java-debug",
+        "vscjava.vscode-maven"
+      ],
+      "settings": {
+        "java.configuration.updateBuildConfiguration": "automatic"
+      }
+    }
+  }
+}

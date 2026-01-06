@@ -1,63 +1,54 @@
 package com.esri.geoportal.base.security;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+/**
+ * Configuration bean for Keycloak OAuth2 integration.
+ */
+@Component("keycloakConfig")
 public class KeycloakConfig {
-    private String keycloakTokenUrl;
+
+    /** Base URL of the Keycloak server, e.g. https://keycloak.example.com/auth */
+    @Value("${keycloakAuthUrl:https://keycloak.example.com/auth}")
     private String keycloakAuthUrl;
+
+    /** Keycloak realm name */
+    @Value("${keycloakRealm:geoportal}")
+    private String realm;
+
+    /** Client ID registered in Keycloak */
+    @Value("${clientId:geoportal-client}")
     private String clientId;
-    private String clientSecret;
-    private String redirectUrl;
+
+    /** Prefix for roles, e.g., "ROLE_" */
+    @Value("${KEYCLOAK_ROLE_PREFIX:ROLE_}")
     private String rolePrefix;
-    private String jwtSigningKey;
-    private UserDetailsService userDetailsService;
-    
-    public String getKeycloakTokenUrl() {
-        return keycloakTokenUrl;
-    }
-    public void setKeycloakTokenUrl(String keycloakTokenUrl) {
-        this.keycloakTokenUrl = keycloakTokenUrl;
-    }
+
+    /** Redirect URI for OAuth2 login */
+    @Value("${KEYCLOAK_REDIRECT_URI:/geoportal/login/oauth2/code/keycloak}")
+    private String redirectUri;
+
+    /** Accessor methods */
+
     public String getKeycloakAuthUrl() {
-        return keycloakAuthUrl;
+        return String.format("%s/realms/%s/protocol/openid-connect/auth", keycloakAuthUrl, realm);
     }
-    public void setKeycloakAuthUrl(String keycloakAuthUrl) {
-        this.keycloakAuthUrl = keycloakAuthUrl;
+
+    public String getRealm() {
+        return realm;
     }
+
     public String getClientId() {
         return clientId;
     }
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-    public String getClientSecret() {
-        return clientSecret;
-    }
-    public void setClientSecret(String clientSecret) {
-        this.clientSecret = clientSecret;
-    }
-    public String getRedirectUrl() {
-        return redirectUrl;
-    }
-    public void setRedirectUrl(String redirectUri) {
-        this.redirectUrl = redirectUri;
-    }
+
     public String getRolePrefix() {
         return rolePrefix;
     }
-    public void setRolePrefix(String rolePrefix) {
-        this.rolePrefix = rolePrefix;
+
+    public String getRedirectUri() {
+        return redirectUri;
     }
-    public String getJwtSigningKey() {
-        return jwtSigningKey;
-    }
-    public void setJwtSigningKey(String jwtSigningKey) {
-        this.jwtSigningKey = jwtSigningKey;
-    }
-    public UserDetailsService getUserDetailsService() {
-        return userDetailsService;
-    }
-    public void setUserDetailsService(UserDetailsService userDetailsService) {
-        this.userDetailsService = userDetailsService;
-    }
+
 }

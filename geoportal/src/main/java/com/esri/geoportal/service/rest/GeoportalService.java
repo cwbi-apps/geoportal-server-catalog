@@ -1,18 +1,18 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.service.rest;
+
 import com.esri.geoportal.base.security.ArcGISAuthenticationProvider;
 import com.esri.geoportal.base.security.Group;
 import com.esri.geoportal.base.security.KeycloakConfig;
@@ -23,16 +23,16 @@ import com.esri.geoportal.context.GeoportalContext;
 
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObjectBuilder;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
 
 /**
  * Handles /rest/geoportal requests.
@@ -41,21 +41,20 @@ import javax.ws.rs.core.SecurityContext;
 public class GeoportalService {
 
   @GET
-  public Response getSelf(
-      @Context SecurityContext sc,
-      @Context HttpServletRequest hsr,
+  public Response getSelf(@Context SecurityContext sc, @Context HttpServletRequest hsr,
       @QueryParam("pretty") boolean pretty) {
-    AppUser user = new AppUser(hsr,sc);
-    return self(user,pretty);
+    AppUser user = new AppUser(hsr, sc);
+    return self(user, pretty);
   }
-  
+
   /**
    * Provide information on the Geoportal application itself.
+   * 
    * @param user the active user
    * @param pretty for pretty JSON
    * @return the response
    */
-  protected Response self(AppUser user, boolean pretty) {    
+  protected Response self(AppUser user, boolean pretty) {
     try {
       GeoportalContext gc = GeoportalContext.getInstance();
       AppResponse response = new AppResponse();
@@ -65,76 +64,68 @@ public class GeoportalService {
           return null;
         }
       };
-      request.init(user,pretty);
+      request.init(user, pretty);
       JsonObjectBuilder jso = Json.createObjectBuilder();
-      
-      jso.add("version",gc.getVersion());
-      jso.add("metadataIndexName",gc.getElasticContext().getItemIndexName());
-      jso.add("supportsApprovalStatus",gc.getSupportsApprovalStatus());
-      jso.add("supportsGroupBasedAccess",gc.getSupportsGroupBasedAccess());
-      jso.add("supportsCollections",gc.getSupportsCollections());
-      
+
+      jso.add("version", gc.getVersion());
+      jso.add("metadataIndexName", gc.getElasticContext().getItemIndexName());
+      jso.add("supportsApprovalStatus", gc.getSupportsApprovalStatus());
+      jso.add("supportsGroupBasedAccess", gc.getSupportsGroupBasedAccess());
+      jso.add("supportsCollections", gc.getSupportsCollections());
+
       if (user != null && user.getUsername() != null) {
-        JsonObjectBuilder jsoUser = Json.createObjectBuilder()
-          .add("username",user.getUsername())
-          .add("isAdmin",user.isAdmin())
-          .add("isPublisher",user.isPublisher())
-          .add("isAnonymous",user.isAnonymous());
+        JsonObjectBuilder jsoUser = Json.createObjectBuilder().add("username", user.getUsername())
+            .add("isAdmin", user.isAdmin()).add("isPublisher", user.isPublisher())
+            .add("isAnonymous", user.isAnonymous());
         if (gc.getSupportsGroupBasedAccess()) {
           JsonArrayBuilder jsaGroups = Json.createArrayBuilder();
           List<Group> groups = user.getGroups();
           if (groups != null) {
-            for (Group group: groups) {
-              jsaGroups.add(Json.createObjectBuilder()
-                .add("id",group.id)
-                .add("name",group.name)
-              );
-            }         
+            for (Group group : groups) {
+              jsaGroups.add(Json.createObjectBuilder().add("id", group.id).add("name", group.name));
+            }
           }
-          jsoUser.add("groups",jsaGroups);
+          jsoUser.add("groups", jsaGroups);
         }
-        jso.add("user",jsoUser);
+        jso.add("user", jsoUser);
       }
-      
+
       ArcGISAuthenticationProvider ap = gc.getBeanIfDeclared("arcgisAuthenticationProvider",
-          ArcGISAuthenticationProvider.class,null);
+          ArcGISAuthenticationProvider.class, null);
       if (ap != null) {
-        jso.add("arcgisOAuth",Json.createObjectBuilder()
-          .add("appId",ap.getAppId())
-          .add("portalUrl",ap.getPortalUrl())
-          .add("restUrl",ap.getRestUrl())
-          .add("expirationMinutes",ap.getExpirationMinutes())
-          .add("showMyProfileLink",ap.getShowMyProfileLink())
-        );
+        jso.add("arcgisOAuth",
+            Json.createObjectBuilder().add("appId", ap.getAppId())
+                .add("portalUrl", ap.getPortalUrl()).add("restUrl", ap.getRestUrl())
+                .add("expirationMinutes", ap.getExpirationMinutes())
+                .add("showMyProfileLink", ap.getShowMyProfileLink()));
         if (ap.getCreateAccountUrl() != null && ap.getCreateAccountUrl().length() > 0) {
-          jso.add("createAccountUrl",ap.getCreateAccountUrl());
+          jso.add("createAccountUrl", ap.getCreateAccountUrl());
         }
       }
 
-      KeycloakConfig config = gc.getBeanIfDeclared("keycloakConfig", 
-          KeycloakConfig.class, null);
-      if (config != null && config.getKeycloakAuthUrl() != null && !config.getKeycloakAuthUrl().isEmpty()) {
-        jso.add("keycloakAuth", Json.createObjectBuilder()
-          .add("url", config.getKeycloakAuthUrl())
-          .add("client_id", config.getClientId())
-        );
+      KeycloakConfig config = gc.getBeanIfDeclared("keycloakConfig", KeycloakConfig.class, null);
+      if (config != null && config.getKeycloakAuthUrl() != null
+          && !config.getKeycloakAuthUrl().isEmpty()) {
+        jso.add("keycloakAuth", Json.createObjectBuilder().add("url", config.getKeycloakAuthUrl())
+            .add("client_id", config.getClientId()));
       }
 
-      response.writeOkJson(request,jso);
-      return response.build();      
+      response.writeOkJson(request, jso);
+      return response.build();
     } catch (Throwable t) {
-      return this.writeException(t,pretty);
+      return this.writeException(t, pretty);
     }
   }
-  
+
   /**
    * Write an exception response.
+   * 
    * @param t the cause
    * @param pretty for pretty JSON
    * @return the response
    */
   protected Response writeException(Throwable t, boolean pretty) {
-    return (new AppResponse()).buildException(t,pretty);
+    return (new AppResponse()).buildException(t, pretty);
   }
-  
+
 }

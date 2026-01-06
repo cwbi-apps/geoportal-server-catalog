@@ -1,29 +1,29 @@
 
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.lib.elastic;
+
 import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
-import javax.json.Json;
-import javax.json.JsonArrayBuilder;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonValue;
+import jakarta.json.Json;
+import jakarta.json.JsonArrayBuilder;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,135 +36,127 @@ import com.esri.geoportal.lib.elastic.http.ElasticClient;
  * Elasticsearch or OpenSearch context (HTTP based, no Transport client.
  */
 public class ElasticContextHttp extends ElasticContext {
-  
+
   /** Logger. */
   private static final Logger LOGGER = LoggerFactory.getLogger(ElasticContextHttp.class);
-  
+
   /** Instance variables . */
   private boolean wasStarted = false;
-  
+
   /** Constructor */
   public ElasticContextHttp() {
     super();
     setUseSeparateXmlItem(false);
   }
-  
+
   /**
    * Create an alias.
+   * 
    * @param index the index name
    * @param alias the alias name
    * @throws Exception
    */
   protected void _createAlias(String index, String alias) throws Exception {
-    //LOGGER.info("Creating alias: "+alias+" for index: "+index);
-	  ElasticClient client = null;
-	  if(!getAwsOpenSearchType().equals("serverless"))
-      {
-    	  client = new ElasticClient(getBaseUrl(false),getBasicCredentials(),getUseHttps());
-      }
-      else
-      {
-    	  client = new ElasticClient(this.getAwsALBEndpoint(), getUseHttps(),getAwsOpenSearchType());
-      }
-    String url = client.getBaseUrl()+"/_aliases";
+    // LOGGER.info("Creating alias: "+alias+" for index: "+index);
+    ElasticClient client = null;
+    if (!getAwsOpenSearchType().equals("serverless")) {
+      client = new ElasticClient(getBaseUrl(false), getBasicCredentials(), getUseHttps());
+    } else {
+      client = new ElasticClient(this.getAwsALBEndpoint(), getUseHttps(), getAwsOpenSearchType());
+    }
+    String url = client.getBaseUrl() + "/_aliases";
     JsonObjectBuilder request = Json.createObjectBuilder();
     JsonArrayBuilder actions = Json.createArrayBuilder();
-    actions.add(Json.createObjectBuilder().add(
-      "add",Json.createObjectBuilder().add("index",index).add("alias",alias)
-    ));
-    request.add("actions",actions);
+    actions.add(Json.createObjectBuilder().add("add",
+        Json.createObjectBuilder().add("index", index).add("alias", alias)));
+    request.add("actions", actions);
     String postData = request.build().toString();
     String contentType = "application/json;charset=utf-8";
-    
+
     @SuppressWarnings("unused")
-    String result = client.sendPost(url,postData,contentType);
-    //LOGGER.debug("_createAlias.result",result);
+    String result = client.sendPost(url, postData, contentType);
+    // LOGGER.debug("_createAlias.result",result);
   }
-  
+
   /**
    * Create an index.
+   * 
    * @param name the index name
    * @throws Exception
    */
   protected void _createIndex(String name) throws Exception {
-    //LOGGER.info("Creating index: "+name);
-	  ElasticClient client = null;
-	  if(!getAwsOpenSearchType().equals("serverless"))
-      {
-    	  client = new ElasticClient(getBaseUrl(false),getBasicCredentials(),getUseHttps());
-      }
-      else
-      {
-    	  client = new ElasticClient(getBaseUrl(false),
-    			  getUseHttps(),getAwsOpenSearchType());
-      }
+    // LOGGER.info("Creating index: "+name);
+    ElasticClient client = null;
+    if (!getAwsOpenSearchType().equals("serverless")) {
+      client = new ElasticClient(getBaseUrl(false), getBasicCredentials(), getUseHttps());
+    } else {
+      client = new ElasticClient(getBaseUrl(false), getUseHttps(), getAwsOpenSearchType());
+    }
     String url = client.getIndexUrl(name);
     String path = this.getActualMappingsFile();
-    JsonObject jso = (JsonObject)JsonUtil.readResourceFile(path);
-    String postData = JsonUtil.toJson(jso,false);
+    JsonObject jso = (JsonObject) JsonUtil.readResourceFile(path);
+    String postData = JsonUtil.toJson(jso, false);
     String contentType = "application/json;charset=utf-8";
-    
+
     if (!this.getUseSeparateXmlItem()) {
       JsonObjectBuilder jb = Json.createObjectBuilder();
-      for (Entry<String, JsonValue> entry: jso.entrySet()) {
+      for (Entry<String, JsonValue> entry : jso.entrySet()) {
         String k = entry.getKey();
         if (k != null && k.equals("mappings")) {
-          JsonObject jso2 = (JsonObject)entry.getValue();
-          JsonObjectBuilder jb2 = Json.createObjectBuilder(); 
-          for (Entry<String, JsonValue> entry2: jso2.entrySet()) {
+          JsonObject jso2 = (JsonObject) entry.getValue();
+          JsonObjectBuilder jb2 = Json.createObjectBuilder();
+          for (Entry<String, JsonValue> entry2 : jso2.entrySet()) {
             String k2 = entry2.getKey();
             if (!k2.equals("blob") && !k2.equals("clob")) {
-              jb2.add(entry2.getKey(),entry2.getValue());
+              jb2.add(entry2.getKey(), entry2.getValue());
             }
           }
-          jb.add("mappings",jb2.build());
+          jb.add("mappings", jb2.build());
         } else {
-          jb.add(entry.getKey(),entry.getValue());
+          jb.add(entry.getKey(), entry.getValue());
         }
       }
       postData = jb.build().toString();
     }
 
     @SuppressWarnings("unused")
-    String result = client.sendPut(url,postData,contentType);
-    //LOGGER.debug("_createIndex.result",result);    
+    String result = client.sendPut(url, postData, contentType);
+    // LOGGER.debug("_createIndex.result",result);
   }
-  
+
   /**
    * Ensure that an index exists.
+   * 
    * @param name the index name
    * @param considerAsAlias consider creating an aliased index
    * @throws Exception if an exception occurs
    */
   public void ensureIndex(String name, boolean considerAsAlias) throws Exception {
-    LOGGER.debug("Checking index: "+name);
-  //For OpenSearch this would always be true
+    LOGGER.debug("Checking index: " + name);
+    // For OpenSearch this would always be true
     this.setIs7Plus(true);
     try {
-      if (name == null || name.trim().length() == 0) return;
+      if (name == null || name.trim().length() == 0)
+        return;
       String result, url;
       ElasticClient client;
-      if(!getAwsOpenSearchType().equals("serverless"))
-      {
-    	client = new ElasticClient(getBaseUrl(false),getBasicCredentials(),getUseHttps());
-    	
-    	//AWS serverless does not allow baseURl get so removed from that option
+      if (!getAwsOpenSearchType().equals("serverless")) {
+        client = new ElasticClient(getBaseUrl(false), getBasicCredentials(), getUseHttps());
+
+        // AWS serverless does not allow baseURl get so removed from that option
         result = client.sendGet(client.getBaseUrl());
-        JsonObject esinfo = (JsonObject)JsonUtil.toJsonStructure(result);
+        JsonObject esinfo = (JsonObject) JsonUtil.toJsonStructure(result);
         String version = esinfo.getJsonObject("version").getString("number");
-        LOGGER.info("Search Engine version: "+version);
+        LOGGER.info("Search Engine version: " + version);
+      } else {
+        client = new ElasticClient(getBaseUrl(false), getUseHttps(), getAwsOpenSearchType());
       }
-      else
-      {
-    	  client = new ElasticClient(getBaseUrl(false),
-    			  getUseHttps(),getAwsOpenSearchType());
-      }
-     
+
       if (this.getUseSeparateXmlItem()) {
         LOGGER.info("Search Engine setting useSeparateXmlItem=false");
         setUseSeparateXmlItem(false);
       }
-      
+
       boolean indexExists = false;
       try {
         client.sendHead(client.getIndexUrl(name));
@@ -172,19 +164,19 @@ public class ElasticContextHttp extends ElasticContext {
       } catch (Exception e) {
         indexExists = false;
       }
-      
+
       if (indexExists) {
         boolean hasClobDocType = false;
         result = client.sendGet(client.getIndexUrl(name));
         if (result != null && result.length() > 0 && result.indexOf("{") == 0) {
-          JsonObject jso = (JsonObject)JsonUtil.toJsonStructure(result);
-          for (Entry<String, JsonValue> entry: jso.entrySet()) {
-            JsonObject jsoIndex = (JsonObject)entry.getValue();
-            for (Entry<String, JsonValue> indexEntry: jsoIndex.entrySet()) {
+          JsonObject jso = (JsonObject) JsonUtil.toJsonStructure(result);
+          for (Entry<String, JsonValue> entry : jso.entrySet()) {
+            JsonObject jsoIndex = (JsonObject) entry.getValue();
+            for (Entry<String, JsonValue> indexEntry : jsoIndex.entrySet()) {
               String indexK = indexEntry.getKey();
               if (indexK != null && indexK.equals("mappings")) {
-                JsonObject jsoMappings = (JsonObject)indexEntry.getValue();
-                for (Entry<String, JsonValue> mappingEntry: jsoMappings.entrySet()) {
+                JsonObject jsoMappings = (JsonObject) indexEntry.getValue();
+                for (Entry<String, JsonValue> mappingEntry : jsoMappings.entrySet()) {
                   String mappingK = mappingEntry.getKey();
                   if (mappingK != null && mappingK.equals("clob")) {
                     hasClobDocType = true;
@@ -192,8 +184,9 @@ public class ElasticContextHttp extends ElasticContext {
                   }
                 }
               }
-              if (hasClobDocType) break;
-            }          
+              if (hasClobDocType)
+                break;
+            }
           }
         }
         if (hasClobDocType && !this.getUseSeparateXmlItem()) {
@@ -201,80 +194,84 @@ public class ElasticContextHttp extends ElasticContext {
           setUseSeparateXmlItem(true);
         }
       }
-      
+
       // return if the index exists
-      if (indexExists) return;
-      
+      if (indexExists)
+        return;
+
       if (name.equals(this.getItemIndexName())) {
         considerAsAlias = this.getIndexNameIsAlias();
       }
-      if (name.indexOf("_v") != -1) considerAsAlias = false;
+      if (name.indexOf("_v") != -1)
+        considerAsAlias = false;
       if (!considerAsAlias) {
         _createIndex(name);
       } else {
-        
-        String pfx = name+"_v";
+
+        String pfx = name + "_v";
         String idxName = null;
         int sfx = -1;
-        
-        url = client.getBaseUrl()+"/_aliases";
-        
+
+        url = client.getBaseUrl() + "/_aliases";
+
         result = client.sendGet(url);
         if (result != null && result.length() > 0 && result.indexOf("{") == 0) {
-          JsonObject jso = (JsonObject)JsonUtil.toJsonStructure(result);
+          JsonObject jso = (JsonObject) JsonUtil.toJsonStructure(result);
           if (!jso.isEmpty()) {
-            for (String k: jso.keySet()) {
+            for (String k : jso.keySet()) {
               if (k.startsWith(pfx)) {
                 String s = k.substring(pfx.length());
-                int i = Val.chkInt(s,-1);
+                int i = Val.chkInt(s, -1);
                 if (i > sfx) {
                   sfx = i;
                   idxName = k;
-                }               
+                }
               }
             }
           }
         }
-        
+
         if (idxName == null) {
-          idxName = pfx+"1";
+          idxName = pfx + "1";
           _createIndex(idxName);
         }
-        _createAlias(idxName,name);
+        _createAlias(idxName, name);
       }
     } catch (Exception e) {
-      LOGGER.error("Error executing ensureIndex()",e);
+      LOGGER.error("Error executing ensureIndex()", e);
       throw e;
     }
   }
-  
-  /** Startup.
+
+  /**
+   * Startup.
    */
   @PostConstruct
   @Override
   public void startup() {
     LOGGER.info("Starting up ElasticContextHttp...");
-    if(!getAwsOpenSearchType().equals("serverless")) //Nodenames are not used in case of AWS opensearch serverless, only ALB endpoint
+    if (!getAwsOpenSearchType().equals("serverless")) // Nodenames are not used in case of AWS
+                                                      // opensearch serverless, only ALB endpoint
     {
-    	String[] nodeNames = this.nodesToArray();
-        if ((nodeNames == null) || (nodeNames.length == 0)) {
-        	LOGGER.warn("Configuration warning: Elasticsearch - no nodes defined.");
-        	return;
-        }    	
-    } 
+      String[] nodeNames = this.nodesToArray();
+      if ((nodeNames == null) || (nodeNames.length == 0)) {
+        LOGGER.warn("Configuration warning: Elasticsearch - no nodes defined.");
+        return;
+      }
+    }
     if (wasStarted) {
       LOGGER.warn("Configuration warning: ElasticContextHttp has already been started.");
-    } else {      
+    } else {
       if (this.getAutoCreateIndex()) {
         String indexName = getItemIndexName();
         String collectionIndexName = getCollectionIndexName();
         boolean indexNameIsAlias = getIndexNameIsAlias();
         boolean autoCreateCollectionIndex = getAutoCreateCollectionIndex();
-       
+
         try {
-          ensureIndex(indexName,indexNameIsAlias);
+          ensureIndex(indexName, indexNameIsAlias);
           if (autoCreateCollectionIndex) {
-              ensureIndex(collectionIndexName,indexNameIsAlias);
+            ensureIndex(collectionIndexName, indexNameIsAlias);
           }
         } catch (Exception e) {
           // keep trying - every 5 minutes
@@ -285,20 +282,20 @@ public class ElasticContextHttp extends ElasticContext {
             @Override
             public void run() {
               try {
-                ensureIndex(indexName,indexNameIsAlias);
+                ensureIndex(indexName, indexNameIsAlias);
                 if (autoCreateCollectionIndex) {
-                    ensureIndex(collectionIndexName,indexNameIsAlias);
+                  ensureIndex(collectionIndexName, indexNameIsAlias);
                 }
                 timer.cancel();
               } catch (Exception e2) {
                 // logging is handled by ensureIndex
               }
-            }      
-          },delay,period);
+            }
+          }, delay, period);
         }
       }
-      
+
     }
   }
-  
+
 }
