@@ -1,3 +1,21 @@
+# Java
+target/
+*.class
+
+# OpenSearch persistent data (keep folder, ignore contents)
+devops/opensearch-data/*
+!devops/opensearch-data/.gitkeep
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.m2/
+
+# VS Code
+.vscode/*.log
+
+# Devcontainers
+.devcontainer/.env
+
 geoportal/target/
 geoportal-search/target/
 geoportal-search/Projects/

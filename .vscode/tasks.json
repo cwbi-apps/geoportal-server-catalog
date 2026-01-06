@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Geoportal WAR",
+      "type": "shell",
+      "command": "mvn clean package -DskipTests",
+      "group": "build"
+    },
+    {
+      "label": "Deploy WAR to Tomcat",
+      "type": "shell",
+      "command": "cp geoportal/target/*.war /opt/tomcat/webapps/geoportal.war",
+      "dependsOn": "Build Geoportal WAR"
+    }
+  ]
+}
