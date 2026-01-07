@@ -1,3 +1,21 @@
+# Java
+target/
+*.class
+
+# OpenSearch persistent data (keep folder, ignore contents)
+devops/opensearch-data/*
+!devops/opensearch-data/.gitkeep
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+.m2/
+
+# VS Code
+.vscode/*.log
+
+# Devcontainers
+.devcontainer/.env
+
 geoportal/target/
 geoportal-search/target/
 geoportal-search/Projects/
@@ -156,3 +174,5 @@ geoportal/src/main/resources/config/app-context.xml.esri
 geoportal/src/main/resources/config/app-context.xml.not
 geoportal/src/main/resources/config/app-context.xml.xom
 geoportal/src/main/resources/config/app-context.local
+.devcontainer/cwbi-truststore.jks
+.gitignore
