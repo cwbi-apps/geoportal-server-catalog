@@ -16,7 +16,7 @@ services:
       - "7010:8080"
       - "5005:5005"
     environment:
-      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Djavax.net.ssl.trustStore=/opt/tomcat/conf/cwbi-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit"
       es_node: opensearch
       gpt_elasticPort: 9200
       gpt_elasticHttps: false

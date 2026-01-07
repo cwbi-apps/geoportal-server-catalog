@@ -37,7 +37,8 @@ public class KeycloakCallbackServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        WebApplicationContext ctx = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        WebApplicationContext ctx =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         this.config = ctx.getBean("keycloakConfig", KeycloakConfig.class);
     }
 
@@ -56,11 +57,12 @@ public class KeycloakCallbackServlet extends HttpServlet {
             form.add("grant_type", "authorization_code");
             form.add("code", code);
             form.add("client_id", config.getClientId());
-            form.add("client_secret", config.getClientSecret());
+            // form.add("client_secret", config.getClientSecret());
             form.add("redirect_uri", config.getRedirectUrl());
 
             RestTemplate rest = new RestTemplate();
-            Map<String, Object> tokenResponse = rest.postForObject(config.getKeycloakTokenUrl(), form, Map.class);
+            Map<String, Object> tokenResponse =
+                    rest.postForObject(config.getKeycloakTokenUrl(), form, Map.class);
 
             String accessToken = (String) tokenResponse.get("access_token");
             String idToken = (String) tokenResponse.get("id_token");
@@ -75,27 +77,27 @@ public class KeycloakCallbackServlet extends HttpServlet {
             if (config.getUserDetailsService() != null) {
                 // We are authorizing locally, but the user might not have any authorizations
                 try {
-                    UserDetails user = config.getUserDetailsService().loadUserByUsername(kcClaims.getStringClaim("preferred_username"));
-                    roles = user.getAuthorities().stream()
-                            .map(GrantedAuthority::getAuthority)
+                    UserDetails user = config.getUserDetailsService()
+                            .loadUserByUsername(kcClaims.getStringClaim("preferred_username"));
+                    roles = user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                             .collect(Collectors.toList());
-                } catch (UsernameNotFoundException exc){
+                } catch (UsernameNotFoundException exc) {
                     roles = Collections.EMPTY_LIST;
                 }
             } else {
-                roles = (List<String>) ((Map<String, Object>) kcClaims.getJSONObjectClaim("realm_access"))
-                        .get("roles");
-                roles = roles.stream().map(role -> config.getRolePrefix() + role).collect(Collectors.toList());
+                roles = (List<String>) ((Map<String, Object>) kcClaims
+                        .getJSONObjectClaim("realm_access")).get("roles");
+                roles = roles.stream().map(role -> config.getRolePrefix() + role)
+                        .collect(Collectors.toList());
             }
             JWTClaimsSet legacyClaims = new JWTClaimsSet.Builder()
                     .claim("exp", kcClaims.getDateClaim("exp"))
                     .claim("user_name", kcClaims.getStringClaim("preferred_username"))
-                    .claim("authorities", roles)
-                    .claim("jti", kcClaims.getStringClaim("jti"))
+                    .claim("authorities", roles).claim("jti", kcClaims.getStringClaim("jti"))
                     .claim("client_id", "geoportal-client")
-                    .claim("scope", Arrays.asList("read", "write"))
-                    .build();
-            JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
+                    .claim("scope", Arrays.asList("read", "write")).build();
+            JWSHeader header =
+                    new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build();
             SignedJWT legacyJwt = new SignedJWT(header, legacyClaims);
             legacyJwt.sign(new MACSigner(config.getJwtSigningKey()));
             String legacyTokenString = legacyJwt.serialize();

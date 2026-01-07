@@ -36,7 +36,7 @@
 # USER vscode
 
 # Base image: OpenJDK 17 for ARM
-FROM mcr.microsoft.com/devcontainers/java:1-17-bullseye
+FROM mcr.microsoft.com/devcontainers/java:1-11-bullseye
 
 # Install Tomcat 9
 ENV TOMCAT_VERSION=9.0.85
@@ -66,6 +66,8 @@ RUN rm -rf ${CATALINA_HOME}/webapps/* && \
 # Make sure m2 and tomcat are writable by vscode
 RUN mkdir -p /home/vscode/.m2 && \
     chown -R vscode:vscode /home/vscode/.m2 ${CATALINA_HOME}
+
+COPY .devcontainer/cwbi-truststore.jks /opt/tomcat/conf/cwbi-truststore.jks
 
 USER vscode
 WORKDIR /workspace
