@@ -32,7 +32,7 @@ define(["dojo/_base/declare",
         "app/content/ShowToken"],
 function(declare, lang, array, topic, appTopics, router, Templated, template, i18n, util, 
     SearchPanel, MapPanel, APIPanel, CollectionsPanel, AboutPanel,
-    MetadataEditor, UploadMetadata) {
+    MetadataEditor, UploadMetadata, ShowToken) {
 
   var oThisClass = declare([Templated], {
 
