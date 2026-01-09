@@ -6,6 +6,7 @@
       "name": "Attach to Tomcat (Geoportal)",
       "request": "attach",
       "hostName": "localhost",
+      "projectName": "geoportal",
       "port": 5005
     }
   ]

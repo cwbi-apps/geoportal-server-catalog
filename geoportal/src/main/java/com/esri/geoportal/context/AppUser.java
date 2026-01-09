@@ -1,18 +1,18 @@
-/* See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Esri Inc. licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+/*
+ * See the NOTICE file distributed with this work for additional information regarding copyright
+ * ownership. Esri Inc. licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package com.esri.geoportal.context;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,118 +41,147 @@ public class AppUser {
   private boolean isAnonymous;
   private boolean isPublisher;
   private String username;
-  
+
   /** Constructor */
   public AppUser() {}
-  
+
   /**
    * Constructor.
+   * 
    * @param request the request
    * @param sc the security context
    */
   public AppUser(HttpServletRequest request, SecurityContext sc) {
     init(request);
   }
-  
+
   /**
    * Constructor.
-   * @param username the username 
+   * 
+   * @param username the username
    * @param isAdmin True is this user has an ADMIN role
    * @param isPublisher True is this user has an PUBLISHER role
    */
   public AppUser(String username, boolean isAdmin, boolean isPublisher) {
-    init(username,isAdmin,isPublisher);
+    init(username, isAdmin, isPublisher);
   }
-  
+
   /** The groups to which this use belongs. */
   public List<Group> getGroups() {
     return groups;
   }
-  
+
   /** The username. */
   public String getUsername() {
     return username;
   }
-  
+
   /** True if this user has an ADMIN role. */
   public boolean isAdmin() {
     return isAdmin;
   }
-  
+
   /** True if this user is anonymous. */
   public boolean isAnonymous() {
     return isAnonymous;
   }
-  
+
   /** True if this user has a PUBLISHER role */
   public boolean isPublisher() {
     return isPublisher;
   }
-  
+
   /**
    * Initialize based upon an HTTP request.
+   * 
    * @param request the request
    */
   private void init(HttpServletRequest request) {
-    init(null,false,false);
-    if (request == null) return;
-    
+    init(null, false, false);
+    if (request == null)
+      return;
+
     Principal p = request.getUserPrincipal();
-    if (p == null) return;
+    if (p == null)
+      return;
     groups = new ArrayList<Group>();
     username = p.getName();
-    if (username != null && username.length() > 0) {
-      isAnonymous = false;
-      isAdmin = request.isUserInRole("ADMIN");
-      isPublisher = request.isUserInRole("PUBLISHER");
-    } else {
-      isAnonymous = true;
-    }
-    //System.err.println("username: "+username+", isAdmin="+isAdmin);
-    
-    String pfx = "ROLE_";
-    String[] gtpRoles = {"ADMIN","PUBLISHER","USER"};
+    // if (username != null && username.length() > 0) {
+    // isAnonymous = false;
+    // isAdmin = request.isUserInRole("ADMIN");
+    // isPublisher = request.isUserInRole("PUBLISHER");
+    // } else {
+    // isAnonymous = true;
+    // }
+    // System.err.println("username: "+username+", isAdmin="+isAdmin);
+
+    String pfx = "DATACATALOG_";
+    String[] gtpRoles = {"ADMIN", "PUBLISHER", "USER"};
     List<String> gptRoleList = Arrays.asList(gtpRoles);
     Collection<GrantedAuthority> authorities = null;
     if (p instanceof UsernamePasswordAuthenticationToken) {
-      UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken)p;
-      if (auth.isAuthenticated()) authorities = auth.getAuthorities();
+      UsernamePasswordAuthenticationToken auth = (UsernamePasswordAuthenticationToken) p;
+      if (auth.isAuthenticated())
+        authorities = auth.getAuthorities();
     } else if (p instanceof OAuth2Authentication) {
-      OAuth2Authentication auth = (OAuth2Authentication)p;
-      if (auth.isAuthenticated()) authorities = auth.getAuthorities();
+      OAuth2Authentication auth = (OAuth2Authentication) p;
+      if (auth.isAuthenticated())
+        authorities = auth.getAuthorities();
     }
     if (authorities != null) {
       Iterator<GrantedAuthority> iterator = authorities.iterator();
       if (iterator != null) {
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
           GrantedAuthority authority = iterator.next();
           if (authority != null) {
             String name = authority.getAuthority();
             if (name != null) {
-              if (name.indexOf(pfx) == 0) name = name.substring(pfx.length());
-              if (gptRoleList.indexOf(name.toUpperCase()) == -1) {
-                //System.err.println("authority: "+name);
+              if (name.indexOf(pfx) == 0)
+                name = name.substring(pfx.length());
+              if (gptRoleList.indexOf(name.toUpperCase()) != -1) {
+                // System.err.println("authority: "+name);
                 groups.add(new Group(name));
               }
             }
           }
-        }          
+        }
       }
     }
-    
-    //check username in GeoportalContext.getUserGroupMap. if it exists(in case of ArcGIS Authentication Provider), add those groups as well
+
+    // check username in GeoportalContext.getUserGroupMap. if it exists(in case of
+    // ArcGIS Authentication Provider), add those groups as well
     GeoportalContext gc = GeoportalContext.getInstance();
-    HashMap<String,ArrayList<Group>> userGroupMap = gc.getUserGroupMap();
-    if(userGroupMap.containsKey(username))
-    {
-    	groups.addAll(userGroupMap.get(username));
+    HashMap<String, ArrayList<Group>> userGroupMap = gc.getUserGroupMap();
+
+    if (userGroupMap.containsKey(username)) {
+      groups.addAll(userGroupMap.get(username));
     }
-    	
+
+    if (username != null && username.length() > 0) {
+      isAnonymous = false;
+
+      isAdmin = false;
+      isPublisher = false;
+
+      for (Group g : groups) {
+        String role = g.name;
+        if ("ADMIN".equalsIgnoreCase(role)) {
+          isAdmin = true;
+        } else if ("PUBLISHER".equalsIgnoreCase(role)) {
+          isPublisher = true;
+        }
+      }
+
+    } else {
+      isAnonymous = true;
+    }
+
   }
-  
+
   /**
    * Initialize.
-   * @param username the username 
+   * 
+   * @param username the username
    * @param isAdmin True is this user has an ADMIN role
    * @param isPublisher True is this user has an PUBLISHER role
    */
@@ -167,7 +196,7 @@ public class AppUser {
       this.isAdmin = false;
       this.isPublisher = false;
     }
-    
+
   }
-  
+
 }
