@@ -1,0 +1,33 @@
+name: Deserialization & Remoting Check
+
+on:
+  push: {}
+  pull_request: {}
+
+jobs:
+  check-deserialization:
+    runs-on: ubuntu-latest
+    name: Scan for risky deserialization and remoting code
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find Java deserialization usages
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Searching for risky patterns in *.java files..."
+          patterns=('ObjectInputStream' 'readObject\s*\(' 'HttpInvokerServiceExporter' 'RmiServiceExporter' 'JdkSerializationRedisSerializer')
+          found=0
+          for p in "${patterns[@]}"; do
+            echo "Searching pattern: $p"
+            matches=$(git grep -nE "$p" -- '*.java' || true)
+            if [ -n "$matches" ]; then
+              echo "Potential risky usage found for pattern: $p"
+              echo "$matches"
+              found=1
+            fi
+          done
+          if [ "$found" -ne 0 ]; then
+            echo "ERROR: Potential Java deserialization/remoting usages found; please review before merging."
+            exit 1
+          fi
+          echo "No suspicious patterns found."

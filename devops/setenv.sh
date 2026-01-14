@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 # export JAVA_OPTS="-Xms1g -Xmx2g -XX:+UseG1GC -Dfile.encoding=UTF-8 -Djava.awt.headless=true -Duser.timezone=UTC -Dgpt.home=/opt/tomcat/webapps/geoportal -Dgpt.auth.config=${GPT_AUTHENTICATION:-authentication-simple.xml} -Dopensearch.host=opensearch -Dopensearch.port=9200 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+# Runtime mitigation: restrict JVM deserialization to safe packages only.
+# Allows core JDK and the application's packages (com.esri.geoportal), denies other application-level classes by default.
+export JAVA_OPTS="${JAVA_OPTS:-} -Djdk.serialFilter=maxdepth=5;java.base/*;com.esri.geoportal.*;!*"
 export OPENSEARCH_INITIAL_ADMIN_PASSWORD=JnfcFCUPHQn2RDbs7FLumMx+yuEx9dhz
 export gpt_elasticPassword=JnfcFCUPHQn2RDbs7FLumMx+yuEx9dhz
 # Other options: authentication-arcgis.xml authentication-ldap.xml authentication-simple.xml
