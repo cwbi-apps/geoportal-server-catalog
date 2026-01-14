@@ -23,7 +23,7 @@ services:
       gpt_base64Iv: not-used-but-exception-if-not-provided
       gpt_base64Key: not-used-but-exception-if-not-provided
       gpt_elasticUser: admin
-      gpt_authentication: authentication-simple.xml
+      gpt_authentication: authentication-arcgis.xml
     depends_on:
       - opensearch
     command: ["bash", "-c", "/opt/tomcat/bin/catalina.sh run"]

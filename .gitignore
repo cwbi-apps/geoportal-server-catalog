@@ -176,3 +176,4 @@ geoportal/src/main/resources/config/app-context.xml.xom
 geoportal/src/main/resources/config/app-context.local
 .devcontainer/cwbi-truststore.jks
 .gitignore
+devops/setenv.sh
