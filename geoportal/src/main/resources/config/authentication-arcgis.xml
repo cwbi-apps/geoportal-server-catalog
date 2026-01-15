@@ -6,6 +6,18 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security-5.8.xsd">
     
+  <beans:bean id="passwordEncoder" class="org.springframework.security.crypto.password.DelegatingPasswordEncoder">
+        <beans:constructor-arg value="bcrypt"/>
+        <beans:constructor-arg>
+            <beans:map>
+                <beans:entry key="bcrypt" value-ref="bcryptEncoder"/>
+                <beans:entry key="noop" value-ref="noopPassEncoder"/>
+            </beans:map>
+        </beans:constructor-arg>
+    </beans:bean>
+    <beans:bean id="bcryptEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+    <beans:bean id ="noopPassEncoder" class = "org.springframework.security.crypto.password.NoOpPasswordEncoder" />
+    
   <beans:bean id="arcgisAuthenticationProvider" class="com.esri.geoportal.base.security.ArcGISAuthenticationProvider">
     <beans:property name="appId" value="${arcgis_appid:qENtZyNFIiAbGSRi}"/>
     <beans:property name="authorizeUrl" value="${arcgis_authorizeUrl:https://geospatial.sec.usace.army.mil/arcgis/sharing/rest/oauth2/authorize}"/>
@@ -17,12 +29,19 @@
     <beans:property name="rolePrefix" value="${role_prefix:DATACATALOG_}" />
     <beans:property name="showMyProfileLink" value="${arcgis_showMyProfileLink:true}" />
   </beans:bean>
-
+  <beans:bean id="daoAuthenticationProvider"
+             class="org.springframework.security.authentication.dao.DaoAuthenticationProvider">
+    <beans:property name="userDetailsService" ref="hardcodedUserService"/>
+    <beans:property name="passwordEncoder" ref="passwordEncoder"/>
+</beans:bean>
   <security:user-service id="hardcodedUserService">
-    <security:user name="gptadmin" password="{noop}${geoportal_admin_password:admin}" authorities="DATACATALOG_ADMIN,DATACATALOG_PUBLISHER" />
+    <security:user name="gptadmin" password="{noop}${geoportal_admin_password:admin}" authorities="DATACATALOG_ADMIN,DATACATALOG_PUBLISHER,ROLE_ADMIN,ROLE_PUBLISHER" />
   </security:user-service>
   
 	<security:authentication-manager id="authenticationManager" alias="authenticationManager">
+      <!-- Try username/password FIRST -->
+    <security:authentication-provider ref="daoAuthenticationProvider"/>
+      <!-- Then try ArcGIS OAuth2 token -->
 	  <security:authentication-provider ref="arcgisAuthenticationProvider"/>
 	</security:authentication-manager>
 
