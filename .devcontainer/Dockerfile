@@ -67,7 +67,5 @@ RUN rm -rf ${CATALINA_HOME}/webapps/* && \
 RUN mkdir -p /home/vscode/.m2 && \
     chown -R vscode:vscode /home/vscode/.m2 ${CATALINA_HOME}
 
-COPY .devcontainer/cwbi-truststore.jks /opt/tomcat/conf/cwbi-truststore.jks
-
 USER vscode
 WORKDIR /workspace

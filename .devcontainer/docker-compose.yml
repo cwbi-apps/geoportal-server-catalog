@@ -16,7 +16,7 @@ services:
       - "7010:8080"
       - "5005:5005"
     environment:
-      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -Djavax.net.ssl.trustStore=/opt/tomcat/conf/cwbi-truststore.jks -Djavax.net.ssl.trustStorePassword=changeit"
+      CATALINA_OPTS: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
       es_node: opensearch
       gpt_elasticPort: 9200
       gpt_elasticHttps: false
@@ -27,6 +27,8 @@ services:
     depends_on:
       - opensearch
     command: ["bash", "-c", "/opt/tomcat/bin/catalina.sh run"]
+    networks:
+      - gptnet
 
   opensearch:
     image: opensearchproject/opensearch:3.4.0
@@ -56,7 +58,13 @@ services:
     ports:
       - "9200:9200"
       - "9600:9600"
+    networks:
+      - gptnet
 
 volumes:
   m2:
   tomcat-webapps:
+
+networks:
+  gptnet:
+    driver: bridge

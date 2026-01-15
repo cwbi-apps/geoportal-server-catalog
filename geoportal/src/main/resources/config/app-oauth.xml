@@ -24,8 +24,8 @@
   <!-- OAuth2 clients ========================================================================== -->
   <oauth:client-details-service id="oauthClientDetails">
     <oauth:client client-id="geoportal-client"
-      authorized-grant-types="password" authorities="ROLE_CLIENT" scope="read,write" />
-    <!-- <oauth:client client-id="geoportal-client" authorized-grant-types="password,refresh_token"
+      authorized-grant-types="password,refresh_token" authorities="ROLE_CLIENT,DATACATALOG_ADMIN,DATACATALOG_PUBLISHER" scope="read,write,trust" />
+    <!-- <oauth:client client-id="geoportal-client" secret="{noop}geoportal-secret" authorized-grant-types="password,refresh_token"
       authorities="ROLE_CLIENT, ROLE_TRUSTED_CLIENT" scope="read,write,trust" /> -->
   </oauth:client-details-service>
   
